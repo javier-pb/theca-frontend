@@ -1,0 +1,17 @@
+<div class="layout-container">
+  <aside class="sidebar">
+    <h3>Theca</h3>
+    <nav>
+      <ul>
+        <li><a routerLink="/recursos" routerLinkActive="active">📚 Recursos</a></li>
+        <li><a routerLink="/categorias" routerLinkActive="active">📁 Categorías</a></li>
+        <li><a routerLink="/etiquetas" routerLinkActive="active">🏷️ Etiquetas</a></li>
+        <li><a routerLink="/autores" routerLinkActive="active">✍️ Autores</a></li>
+      </ul>
+    </nav>
+    <button (click)="logout()" class="logout-btn">Cerrar sesión</button>
+  </aside>
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

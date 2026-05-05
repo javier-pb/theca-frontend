@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "theca-frontend-temp": {
+    "theca-frontend": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -16,7 +16,10 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "outputPath": "dist/theca-frontend",
+            "index": "src/index.html",
             "browser": "src/main.ts",
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
@@ -24,17 +27,8 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "security": {
-              "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            "styles": ["src/styles.css"],
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -67,16 +61,24 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "theca-frontend-temp:build:production"
+              "buildTarget": "theca-frontend:build:production"
             },
             "development": {
-              "buildTarget": "theca-frontend-temp:build:development"
+              "buildTarget": "theca-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": ["zone.js", "zone.js/testing"],
+            "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "karma.conf.js",
+            "styles": ["src/styles.css"],
+            "scripts": [],
+            "assets": ["src/favicon.ico", "src/assets"]
+          }
         }
       }
     }
