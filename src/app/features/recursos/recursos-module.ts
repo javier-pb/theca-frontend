@@ -1,8 +1,13 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RecursosRoutingModule } from './recursos-routing.module';
 
 @NgModule({
   declarations: [],
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    RecursosRoutingModule
+  ]
 })
-export class RecursosModule {}
+// Módulo principal para la sección de recursos:
+export class RecursosModule { }

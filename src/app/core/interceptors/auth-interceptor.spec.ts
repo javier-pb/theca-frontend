@@ -1,19 +1,19 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
-import { vi } from 'vitest';
+
 import { AuthInterceptor } from './auth-interceptor';
 import { AuthService } from '../services/auth';
 
-// Test unitario para el interceptor de autenticación:
+// Test unitario para el AuthInterceptor:
 describe('AuthInterceptor', () => {
 
   let httpMock: HttpTestingController;
   let httpClient: HttpClient;
-  let authService: { getToken: any };
+  let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    const authServiceSpy = { getToken: vi.fn() };
+    const authServiceSpy = jasmine.createSpyObj('AuthService', ['getToken']);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -30,7 +30,7 @@ describe('AuthInterceptor', () => {
 
     httpMock = TestBed.inject(HttpTestingController);
     httpClient = TestBed.inject(HttpClient);
-    authService = TestBed.inject(AuthService) as { getToken: any };
+    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
   });
 
   afterEach(() => {
@@ -45,7 +45,7 @@ describe('AuthInterceptor', () => {
   describe('intercept', () => {
     it('should add Authorization header if token exists', () => {
       const token = 'abc123';
-      authService.getToken.mockReturnValue(token);
+      authService.getToken.and.returnValue(token);
 
       httpClient.get('/test').subscribe();
 
@@ -55,7 +55,7 @@ describe('AuthInterceptor', () => {
     });
 
     it('should not add Authorization header if no token', () => {
-      authService.getToken.mockReturnValue(null);
+      authService.getToken.and.returnValue(null);
 
       httpClient.get('/test').subscribe();
 

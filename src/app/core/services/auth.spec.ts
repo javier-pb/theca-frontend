@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { vi } from 'vitest';
+
 import { AuthService } from './auth';
 
-// Test unitario para el servicio de autenticación:
+// Test unitario para el AuthService:
 describe('AuthService', () => {
 
   let service: AuthService;
@@ -61,7 +61,7 @@ describe('AuthService', () => {
   describe('saveToken', () => {
     it('should save token to localStorage', () => {
       const token = 'abc123';
-      const spy = vi.spyOn(Storage.prototype, 'setItem');
+      const spy = spyOn(Storage.prototype, 'setItem');
 
       service.saveToken(token);
 
@@ -72,16 +72,16 @@ describe('AuthService', () => {
   describe('getToken', () => {
     it('should return token from localStorage', () => {
       const token = 'abc123';
-      const spy = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(token);
+      spyOn(Storage.prototype, 'getItem').and.returnValue(token);
 
       const result = service.getToken();
 
       expect(result).toBe(token);
-      expect(spy).toHaveBeenCalledWith('token');
+      expect(Storage.prototype.getItem).toHaveBeenCalledWith('token');
     });
 
     it('should return null if no token', () => {
-      const spy = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
+      spyOn(Storage.prototype, 'getItem').and.returnValue(null);
 
       const result = service.getToken();
 
@@ -91,7 +91,7 @@ describe('AuthService', () => {
 
   describe('isLoggedIn', () => {
     it('should return true if token exists', () => {
-      vi.spyOn(service, 'getToken').mockReturnValue('abc123');
+      spyOn(service, 'getToken').and.returnValue('abc123');
 
       const result = service.isLoggedIn();
 
@@ -99,7 +99,7 @@ describe('AuthService', () => {
     });
 
     it('should return false if no token', () => {
-      vi.spyOn(service, 'getToken').mockReturnValue(null);
+      spyOn(service, 'getToken').and.returnValue(null);
 
       const result = service.isLoggedIn();
 
@@ -109,7 +109,7 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should remove token from localStorage', () => {
-      const spy = vi.spyOn(Storage.prototype, 'removeItem');
+      const spy = spyOn(Storage.prototype, 'removeItem');
 
       service.logout();
 
