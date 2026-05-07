@@ -1,0 +1,165 @@
+.lista-container {
+  padding: 1rem;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.btn-crear {
+  background: #667eea;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.recursos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1rem;
+}
+
+.recurso-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.card-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-editar, .btn-eliminar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.2rem;
+}
+
+.btn-editar:hover { opacity: 0.7; }
+.btn-eliminar:hover { opacity: 0.7; }
+
+.descripcion {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+.tipo {
+  color: #888;
+  font-size: 0.8rem;
+  margin: 0.25rem 0;
+}
+
+.enlace {
+  display: inline-block;
+  color: #667eea;
+  text-decoration: none;
+  font-size: 0.8rem;
+  margin: 0.25rem 0;
+}
+
+.enlace:hover {
+  text-decoration: underline;
+}
+
+.card-footer {
+  margin-top: 0.75rem;
+  text-align: right;
+}
+
+.btn-detalle {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-detalle:hover {
+  text-decoration: underline;
+}
+
+.loading, .error, .empty {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.error {
+  color: red;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+}
+
+.modal h3 {
+  margin-top: 0;
+}
+
+.advertencia {
+  color: red;
+  font-size: 0.85rem;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.btn-cancelar {
+  background: #ccc;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-confirmar {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}

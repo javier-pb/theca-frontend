@@ -11,8 +11,9 @@ import { Component } from '@angular/core';
 @Component({ template: '' })
 class DummyComponent {}
 
-// Test unitario para el LoginComponent:
+// Test suite para el login de usuarios:
 describe('LoginComponent', () => {
+
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
@@ -25,7 +26,7 @@ describe('LoginComponent', () => {
         LoginComponent,
         HttpClientTestingModule,
         RouterTestingModule.withRoutes([
-          { path: 'recursos', component: DummyComponent }  // ← AÑADE ESTO
+          { path: 'recursos', component: DummyComponent }
         ])
       ],
       providers: [
@@ -48,15 +49,17 @@ describe('LoginComponent', () => {
   });
 
   it('should initialize with empty form fields', () => {
-    expect(component.username).toBe('');
-    expect(component.password).toBe('');
-    expect(component.loading).toBe(false);
-    expect(component.error).toBe('');
+    expect(component.username()).toBe('');
+    expect(component.password()).toBe('');
+    expect(component.loading()).toBe(false);
+    expect(component.error()).toBe('');
+    expect(component.errorUsername()).toBe('');
+    expect(component.errorPassword()).toBe('');
   });
 
   it('should call authService.login with credentials', fakeAsync(() => {
-    component.username = 'testuser';
-    component.password = '123456';
+    component.username.set('testuser');
+    component.password.set('123456');
     const mockResponse = { token: 'abc123' };
     mockAuthService.login.and.returnValue(of(mockResponse));
 
@@ -70,31 +73,31 @@ describe('LoginComponent', () => {
   }));
 
   it('should set loading to true during login', () => {
-    component.username = 'testuser';
-    component.password = '123456';
+    component.username.set('testuser');
+    component.password.set('123456');
     const mockResponse = { token: 'abc123' };
     mockAuthService.login.and.returnValue(of(mockResponse).pipe(delay(1000)));
 
     component.onSubmit();
 
-    expect(component.loading).toBe(true);
+    expect(component.loading()).toBe(true);
   });
 
   it('should set loading to false after successful login', fakeAsync(() => {
-    component.username = 'testuser';
-    component.password = '123456';
+    component.username.set('testuser');
+    component.password.set('123456');
     const mockResponse = { token: 'abc123' };
     mockAuthService.login.and.returnValue(of(mockResponse));
 
     component.onSubmit();
     tick();
 
-    expect(component.loading).toBe(false);
+    expect(component.loading()).toBe(false);
   }));
 
   it('should save token', fakeAsync(() => {
-    component.username = 'testuser';
-    component.password = '123456';
+    component.username.set('testuser');
+    component.password.set('123456');
     const mockResponse = { token: 'abc123' };
     mockAuthService.login.and.returnValue(of(mockResponse));
 
@@ -107,8 +110,8 @@ describe('LoginComponent', () => {
   it('should navigate to /recursos after successful login', fakeAsync(() => {
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
-    component.username = 'testuser';
-    component.password = '123456';
+    component.username.set('testuser');
+    component.password.set('123456');
     const mockResponse = { token: 'abc123' };
     mockAuthService.login.and.returnValue(of(mockResponse));
 
@@ -119,35 +122,50 @@ describe('LoginComponent', () => {
   }));
 
   it('should clear error message on successful login', fakeAsync(() => {
-    component.username = 'testuser';
-    component.password = '123456';
-    component.error = 'Error anterior';
+    component.username.set('testuser');
+    component.password.set('123456');
+    component.error.set('Error anterior');
     const mockResponse = { token: 'abc123' };
     mockAuthService.login.and.returnValue(of(mockResponse));
 
     component.onSubmit();
     tick();
 
-    expect(component.error).toBe('');
+    expect(component.error()).toBe('');
+  }));
+
+  it('should clear field errors on successful submission', fakeAsync(() => {
+    component.username.set('testuser');
+    component.password.set('123456');
+    component.errorUsername.set('Error anterior');
+    component.errorPassword.set('Error anterior');
+    const mockResponse = { token: 'abc123' };
+    mockAuthService.login.and.returnValue(of(mockResponse));
+
+    component.onSubmit();
+    tick();
+
+    expect(component.errorUsername()).toBe('');
+    expect(component.errorPassword()).toBe('');
   }));
 
   it('should handle login error', fakeAsync(() => {
-    component.username = 'testuser';
-    component.password = '123456';
+    component.username.set('testuser');
+    component.password.set('123456');
     mockAuthService.login.and.returnValue(throwError(() => new Error('Unauthorized')));
 
     component.onSubmit();
     tick();
 
-    expect(component.loading).toBe(false);
-    expect(component.error).toBe('Credenciales inválidas');
+    expect(component.loading()).toBe(false);
+    expect(component.error()).toBe('Credenciales inválidas');
   }));
 
   it('should not navigate to recursos on error', fakeAsync(() => {
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
-    component.username = 'testuser';
-    component.password = '123456';
+    component.username.set('testuser');
+    component.password.set('123456');
     mockAuthService.login.and.returnValue(throwError(() => new Error('Error')));
 
     component.onSubmit();
@@ -157,8 +175,8 @@ describe('LoginComponent', () => {
   }));
 
   it('should not save token on error', fakeAsync(() => {
-    component.username = 'testuser';
-    component.password = '123456';
+    component.username.set('testuser');
+    component.password.set('123456');
     mockAuthService.login.and.returnValue(throwError(() => new Error('Error')));
 
     component.onSubmit();
@@ -167,34 +185,35 @@ describe('LoginComponent', () => {
     expect(mockAuthService.saveToken).not.toHaveBeenCalled();
   }));
 
-  it('should handle empty username', fakeAsync(() => {
-    component.username = '';
-    component.password = '123456';
-    const mockResponse = { token: 'abc123' };
-    mockAuthService.login.and.returnValue(of(mockResponse));
+  it('should show error when username is empty', () => {
+    component.username.set('');
+    component.password.set('123456');
 
     component.onSubmit();
-    tick();
 
-    expect(mockAuthService.login).toHaveBeenCalledWith({
-      username: '',
-      password: '123456'
-    });
-  }));
+    expect(component.errorUsername()).toBe('El usuario es obligatorio');
+    expect(mockAuthService.login).not.toHaveBeenCalled();
+  });
 
-  it('should handle empty password', fakeAsync(() => {
-    component.username = 'testuser';
-    component.password = '';
-    const mockResponse = { token: 'abc123' };
-    mockAuthService.login.and.returnValue(of(mockResponse));
+  it('should show error when password is empty', () => {
+    component.username.set('testuser');
+    component.password.set('');
 
     component.onSubmit();
-    tick();
 
-    expect(mockAuthService.login).toHaveBeenCalledWith({
-      username: 'testuser',
-      password: ''
-    });
-  }));
+    expect(component.errorPassword()).toBe('La contraseña es obligatoria');
+    expect(mockAuthService.login).not.toHaveBeenCalled();
+  });
+
+  it('should show errors when both fields are empty', () => {
+    component.username.set('');
+    component.password.set('');
+
+    component.onSubmit();
+
+    expect(component.errorUsername()).toBe('El usuario es obligatorio');
+    expect(component.errorPassword()).toBe('La contraseña es obligatoria');
+    expect(mockAuthService.login).not.toHaveBeenCalled();
+  });
 
 });

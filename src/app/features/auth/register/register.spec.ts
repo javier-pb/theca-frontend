@@ -11,7 +11,7 @@ import { Component } from '@angular/core';
 @Component({ template: '' })
 class DummyComponent {}
 
-// Test unitario para el RegisterComponent:
+// Test unitario para el registro de usuarios:
 describe('RegisterComponent', () => {
 
   let component: RegisterComponent;
@@ -48,17 +48,24 @@ describe('RegisterComponent', () => {
   });
 
   it('should initialize with empty form fields', () => {
-    expect(component.nombre).toBe('');
-    expect(component.correo).toBe('');
-    expect(component.contrasena).toBe('');
-    expect(component.loading).toBe(false);
-    expect(component.error).toBe('');
+    expect(component.nombre()).toBe('');
+    expect(component.correo()).toBe('');
+    expect(component.contrasena()).toBe('');
+    expect(component.repetirContrasena()).toBe('');
+    expect(component.loading()).toBe(false);
+    expect(component.errorNombre()).toBe('');
+    expect(component.errorEmail()).toBe('');
+    expect(component.errorContrasena()).toBe('');
+    expect(component.errorPasswordMatch()).toBe('');
+    expect(component.errorGeneral()).toBe('');
+    expect(component.mensajeExito()).toBe('');
   });
 
   it('should bind input values to component properties', () => {
     const nombreInput = fixture.debugElement.nativeElement.querySelector('input[name="nombre"]');
     const correoInput = fixture.debugElement.nativeElement.querySelector('input[name="correo"]');
     const contrasenaInput = fixture.debugElement.nativeElement.querySelector('input[name="contrasena"]');
+    const repetirInput = fixture.debugElement.nativeElement.querySelector('input[name="repetirContrasena"]');
 
     nombreInput.value = 'testuser';
     nombreInput.dispatchEvent(new Event('input'));
@@ -66,17 +73,21 @@ describe('RegisterComponent', () => {
     correoInput.dispatchEvent(new Event('input'));
     contrasenaInput.value = '123456';
     contrasenaInput.dispatchEvent(new Event('input'));
+    repetirInput.value = '123456';
+    repetirInput.dispatchEvent(new Event('input'));
 
-    expect(component.nombre).toBe('testuser');
-    expect(component.correo).toBe('test@email.com');
-    expect(component.contrasena).toBe('123456');
+    expect(component.nombre()).toBe('testuser');
+    expect(component.correo()).toBe('test@email.com');
+    expect(component.contrasena()).toBe('123456');
+    expect(component.repetirContrasena()).toBe('123456');
   });
 
   it('should call authService.register with user data', fakeAsync(() => {
-    component.nombre = 'newuser';
-    component.correo = 'new@email.com';
-    component.contrasena = '123456';
-    mockAuthService.register.and.returnValue(of({}));
+    component.nombre.set('newuser');
+    component.correo.set('new@email.com');
+    component.contrasena.set('123456');
+    component.repetirContrasena.set('123456');
+    mockAuthService.register.and.returnValue(of('¡Usuario registrado con éxito!'));
 
     component.onSubmit();
     tick();
@@ -89,183 +100,160 @@ describe('RegisterComponent', () => {
   }));
 
   it('should set loading to true during registration', () => {
-    component.nombre = 'newuser';
-    component.correo = 'new@email.com';
-    component.contrasena = '123456';
-    mockAuthService.register.and.returnValue(of({}).pipe(delay(1000)));
+    component.nombre.set('newuser');
+    component.correo.set('new@email.com');
+    component.contrasena.set('123456');
+    component.repetirContrasena.set('123456');
+    mockAuthService.register.and.returnValue(of('Éxito').pipe(delay(1000)));
 
     component.onSubmit();
 
-    expect(component.loading).toBe(true);
+    expect(component.loading()).toBe(true);
   });
 
   it('should set loading to false after successful registration', fakeAsync(() => {
-    component.nombre = 'newuser';
-    component.correo = 'new@email.com';
-    component.contrasena = '123456';
-    mockAuthService.register.and.returnValue(of({}));
+    component.nombre.set('newuser');
+    component.correo.set('new@email.com');
+    component.contrasena.set('123456');
+    component.repetirContrasena.set('123456');
+    mockAuthService.register.and.returnValue(of('Éxito'));
 
     component.onSubmit();
     tick();
 
-    expect(component.loading).toBe(false);
+    expect(component.loading()).toBe(false);
+  }));
+
+  it('should show success message after successful registration', fakeAsync(() => {
+    component.nombre.set('newuser');
+    component.correo.set('new@email.com');
+    component.contrasena.set('123456');
+    component.repetirContrasena.set('123456');
+    mockAuthService.register.and.returnValue(of('¡Usuario registrado con éxito!'));
+
+    component.onSubmit();
+    tick();
+
+    expect(component.mensajeExito()).toBe('¡Usuario registrado con éxito!');
   }));
 
   it('should navigate to /login after successful registration', fakeAsync(() => {
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
-    component.nombre = 'newuser';
-    component.correo = 'new@email.com';
-    component.contrasena = '123456';
-    mockAuthService.register.and.returnValue(of({}));
+    component.nombre.set('newuser');
+    component.correo.set('new@email.com');
+    component.contrasena.set('123456');
+    component.repetirContrasena.set('123456');
+    mockAuthService.register.and.returnValue(of('Éxito'));
 
     component.onSubmit();
-    tick();
+    tick(2000);
 
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
   }));
 
-  it('should clear error message on successful registration', fakeAsync(() => {
-    component.nombre = 'newuser';
-    component.correo = 'new@email.com';
-    component.contrasena = '123456';
-    component.error = 'Error anterior';
-    mockAuthService.register.and.returnValue(of({}));
-
+  it('should show error when nombre is empty', () => {
+    component.nombre.set('');
     component.onSubmit();
-    tick();
+    expect(component.errorNombre()).toBe('El nombre es obligatorio');
+  });
 
-    expect(component.error).toBe('');
-  }));
+  it('should show error when nombre is too short', () => {
+    component.nombre.set('ab');
+    component.onSubmit();
+    expect(component.errorNombre()).toBe('El nombre debe tener al menos 3 caracteres');
+  });
 
-  it('should handle error response with message string', fakeAsync(() => {
-    component.nombre = 'newuser';
-    component.correo = 'new@email.com';
-    component.contrasena = '123456';
+  it('should show error when nombre is too long', () => {
+    component.nombre.set('a'.repeat(51));
+    component.onSubmit();
+    expect(component.errorNombre()).toBe('El nombre no puede superar los 50 caracteres');
+  });
+
+  it('should show error when email is empty', () => {
+    component.correo.set('');
+    component.onSubmit();
+    expect(component.errorEmail()).toBe('El correo electrónico es obligatorio');
+  });
+
+  it('should show error when email is invalid', () => {
+    component.correo.set('correo-invalido');
+    component.onSubmit();
+    expect(component.errorEmail()).toBe('El correo electrónico debe ser válido');
+  });
+
+  it('should show error when password is empty', () => {
+    component.contrasena.set('');
+    component.onSubmit();
+    expect(component.errorContrasena()).toBe('La contraseña es obligatoria');
+  });
+
+  it('should show error when password is too short', () => {
+    component.contrasena.set('12345');
+    component.onSubmit();
+    expect(component.errorContrasena()).toBe('La contraseña debe tener al menos 6 caracteres');
+  });
+
+  it('should show error when passwords do not match', () => {
+    component.contrasena.set('123456');
+    component.repetirContrasena.set('654321');
+    component.onSubmit();
+    expect(component.errorPasswordMatch()).toBe('Las contraseñas introducidas no coinciden');
+  });
+
+  it('should handle error when username already exists', fakeAsync(() => {
+    component.nombre.set('newuser');
+    component.correo.set('new@email.com');
+    component.contrasena.set('123456');
+    component.repetirContrasena.set('123456');
     const errorResponse = { error: 'El usuario ya existe' };
     mockAuthService.register.and.returnValue(throwError(() => errorResponse));
 
     component.onSubmit();
     tick();
 
-    expect(component.loading).toBe(false);
-    expect(component.error).toBe('El usuario ya existe');
+    expect(component.loading()).toBe(false);
+    expect(component.errorGeneral()).toBe('El nombre de usuario no está disponible');
   }));
 
-  it('should handle error response without message (uses default)', fakeAsync(() => {
-    component.nombre = 'newuser';
-    component.correo = 'new@email.com';
-    component.contrasena = '123456';
-    const errorResponse = { error: undefined };
+  it('should handle error when email already exists', fakeAsync(() => {
+    component.nombre.set('newuser');
+    component.correo.set('new@email.com');
+    component.contrasena.set('123456');
+    component.repetirContrasena.set('123456');
+    const errorResponse = { error: 'correo ya existe' };
     mockAuthService.register.and.returnValue(throwError(() => errorResponse));
 
     component.onSubmit();
     tick();
 
-    expect(component.loading).toBe(false);
-    expect(component.error).toBe('Error al registrarse');
-  }));
-
-  it('should handle error response with null error (uses default)', fakeAsync(() => {
-    component.nombre = 'newuser';
-    component.correo = 'new@email.com';
-    component.contrasena = '123456';
-    const errorResponse = { error: null };
-    mockAuthService.register.and.returnValue(throwError(() => errorResponse));
-
-    component.onSubmit();
-    tick();
-
-    expect(component.loading).toBe(false);
-    expect(component.error).toBe('Error al registrarse');
-  }));
-
-  it('should handle generic error (no error property)', fakeAsync(() => {
-    component.nombre = 'newuser';
-    component.correo = 'new@email.com';
-    component.contrasena = '123456';
-    mockAuthService.register.and.returnValue(throwError(() => new Error('Network error')));
-
-    component.onSubmit();
-    tick();
-
-    expect(component.loading).toBe(false);
-    expect(component.error).toBe('Error al registrarse');
+    expect(component.loading()).toBe(false);
+    expect(component.errorGeneral()).toBe('El correo electrónico ya se encuentra registrado');
   }));
 
   it('should handle generic error', fakeAsync(() => {
-    component.nombre = 'newuser';
-    component.correo = 'new@email.com';
-    component.contrasena = '123456';
+    component.nombre.set('newuser');
+    component.correo.set('new@email.com');
+    component.contrasena.set('123456');
+    component.repetirContrasena.set('123456');
     mockAuthService.register.and.returnValue(throwError(() => new Error('Network error')));
 
     component.onSubmit();
     tick();
 
-    expect(component.loading).toBe(false);
-    expect(component.error).toBe('Error al registrarse');
+    expect(component.loading()).toBe(false);
+    expect(component.errorGeneral()).toBe('Error al registrarse');
   }));
 
-  it('should not navigate to login on error', fakeAsync(() => {
-    const router = TestBed.inject(Router);
-    spyOn(router, 'navigate');
-    component.nombre = 'newuser';
-    component.correo = 'new@email.com';
-    component.contrasena = '123456';
-    mockAuthService.register.and.returnValue(throwError(() => new Error('Error')));
+  it('should not call register if validation fails', () => {
+    component.nombre.set('');
+    component.correo.set('');
+    component.contrasena.set('');
+    component.repetirContrasena.set('');
 
     component.onSubmit();
-    tick();
 
-    expect(router.navigate).not.toHaveBeenCalled();
-  }));
-
-  it('should handle empty nombre', fakeAsync(() => {
-    component.nombre = '';
-    component.correo = 'test@email.com';
-    component.contrasena = '123456';
-    mockAuthService.register.and.returnValue(of({}));
-
-    component.onSubmit();
-    tick();
-
-    expect(mockAuthService.register).toHaveBeenCalledWith({
-      nombre: '',
-      correo: 'test@email.com',
-      contrasena: '123456'
-    });
-  }));
-
-  it('should handle empty email', fakeAsync(() => {
-    component.nombre = 'testuser';
-    component.correo = '';
-    component.contrasena = '123456';
-    mockAuthService.register.and.returnValue(of({}));
-
-    component.onSubmit();
-    tick();
-
-    expect(mockAuthService.register).toHaveBeenCalledWith({
-      nombre: 'testuser',
-      correo: '',
-      contrasena: '123456'
-    });
-  }));
-
-  it('should handle empty password', fakeAsync(() => {
-    component.nombre = 'testuser';
-    component.correo = 'test@email.com';
-    component.contrasena = '';
-    mockAuthService.register.and.returnValue(of({}));
-
-    component.onSubmit();
-    tick();
-
-    expect(mockAuthService.register).toHaveBeenCalledWith({
-      nombre: 'testuser',
-      correo: 'test@email.com',
-      contrasena: ''
-    });
-  }));
+    expect(mockAuthService.register).not.toHaveBeenCalled();
+  });
 
 });
