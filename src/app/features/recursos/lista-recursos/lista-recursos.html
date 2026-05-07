@@ -1,1 +1,65 @@
-<p>lista-recursos works!</p>
+<div class="lista-container">
+  <h2>Mis recursos</h2>
+
+  <div class="header-actions">
+    <button class="btn-crear" routerLink="/recursos/nuevo">+ Nuevo recurso</button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">Cargando recursos...</div>
+  }
+
+  @if (error()) {
+    <div class="error">{{ error() }}</div>
+  }
+
+  @if (!loading() && !error()) {
+    @if (recursos().length === 0) {
+      <div class="empty">
+        No tienes recursos. ¡Crea tu primero!
+      </div>
+    }
+
+    @if (recursos().length > 0) {
+      <div class="recursos-grid">
+        @for (recurso of recursos(); track recurso.id) {
+          <div class="recurso-card">
+            <div class="card-header">
+              <h3>{{ recurso.titulo }}</h3>
+              <div class="card-actions">
+                <button class="btn-editar" [routerLink]="['/recursos/editar', recurso.id]">✏️</button>
+                <button class="btn-eliminar" (click)="confirmarEliminar(recurso)">🗑️</button>
+              </div>
+            </div>
+            @if (recurso.descripcion) {
+              <p class="descripcion">{{ recurso.descripcion | slice:0:100 }}{{ recurso.descripcion.length > 100 ? '...' : '' }}</p>
+            }
+            @if (recurso.tipo) {
+              <p class="tipo">Tipo: {{ recurso.tipo }}</p>
+            }
+            @if (recurso.enlace) {
+              <a [href]="recurso.enlace" target="_blank" class="enlace">Ver enlace</a>
+            }
+            <div class="card-footer">
+              <button class="btn-detalle" [routerLink]="['/recursos/detalle', recurso.id]">Ver detalles</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  @if (mostrarModal()) {
+    <div class="modal-overlay">
+      <div class="modal">
+        <h3>Confirmar eliminación</h3>
+        <p>¿Estás seguro de que quieres eliminar el recurso "{{ recursoAEliminar()?.titulo }}"?</p>
+        <p class="advertencia">Esta acción no se puede deshacer.</p>
+        <div class="modal-buttons">
+          <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button class="btn-confirmar" (click)="eliminar()">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

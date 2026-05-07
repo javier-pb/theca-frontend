@@ -5,7 +5,7 @@ import { HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
 import { AuthInterceptor } from './auth-interceptor';
 import { AuthService } from '../services/auth';
 
-// Test unitario para el AuthInterceptor:
+// Tests unitarios para el interceptor de autenticación:
 describe('AuthInterceptor', () => {
 
   let httpMock: HttpTestingController;
@@ -37,7 +37,7 @@ describe('AuthInterceptor', () => {
     httpMock.verify();
   });
 
-  it('should be created', () => {
+  it('should create', () => {
     const interceptor = TestBed.inject(AuthInterceptor);
     expect(interceptor).toBeTruthy();
   });

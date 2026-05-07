@@ -3,7 +3,7 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 
 import { AuthService } from './auth';
 
-// Test unitario para el AuthService:
+// Test unitario para el servicio de autenticación:
 describe('AuthService', () => {
 
   let service: AuthService;
@@ -27,18 +27,18 @@ describe('AuthService', () => {
   });
 
   describe('register', () => {
-    it('should call register endpoint and return response', () => {
-      const user = { username: 'test', password: 'pass' };
-      const mockResponse = { token: 'abc123' };
+    it('should call register endpoint and return text response', () => {
+      const user = { nombre: 'test', correo: 'test@email.com', contrasena: '123456' };
+      const mockResponse = 'Usuario registrado con éxito';
 
       service.register(user).subscribe(response => {
-        expect(response).toEqual(mockResponse);
+        expect(response).toBe(mockResponse);
       });
 
       const req = httpMock.expectOne('/api/auth/register');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(user);
-      req.flush(mockResponse);
+      req.flush(mockResponse, { status: 200, statusText: 'OK' });
     });
   });
 
@@ -114,6 +114,53 @@ describe('AuthService', () => {
       service.logout();
 
       expect(spy).toHaveBeenCalledWith('token');
+    });
+  });
+
+  describe('getUserId', () => {
+    it('should return null if no token exists', () => {
+      spyOn(service, 'getToken').and.returnValue(null);
+
+      const userId = service.getUserId();
+
+      expect(userId).toBeNull();
+    });
+
+    it('should decode token and return sub claim', () => {
+      const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0OCIsImlhdCI6MTc3ODE3MTczNCwiZXhwIjoxNzc4MjU4MTM0fQ.us846olgl1nJTzyciZjy5QzfUDiPrBKRfgXo_lfrmXwt-_8Vbvc6hLwb5CxDLEmBH3WD2SLEx4QzgpN8I4vEXw';
+      spyOn(service, 'getToken').and.returnValue(token);
+
+      const userId = service.getUserId();
+
+      expect(userId).toBe('test8');
+    });
+
+    it('should return null if token is invalid (malformed)', () => {
+      spyOn(service, 'getToken').and.returnValue('invalid.token.here');
+
+      const userId = service.getUserId();
+
+      expect(userId).toBeNull();
+    });
+
+    it('should return null if token has no sub claim', () => {
+      const token = 'eyJhbGciOiJIUzUxMiJ9.e30.us846olgl1nJTzyciZjy5QzfUDiPrBKRfgXo_lfrmXwt-_8Vbvc6hLwb5CxDLEmBH3WD2SLEx4QzgpN8I4vEXw';
+      spyOn(service, 'getToken').and.returnValue(token);
+
+      const userId = service.getUserId();
+
+      expect(userId).toBeNull();
+    });
+
+    it('should handle token decode error gracefully', () => {
+      spyOn(service, 'getToken').and.returnValue('invalid!!token');
+
+      spyOn(console, 'error');
+
+      const userId = service.getUserId();
+
+      expect(userId).toBeNull();
+      expect(console.error).toHaveBeenCalled();
     });
   });
 

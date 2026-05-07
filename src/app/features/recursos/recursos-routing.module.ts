@@ -1,25 +1,25 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ListaRecursos } from './lista-recursos/lista-recursos';
-import { FormularioRecurso } from './formulario-recurso/formulario-recurso';
-import { DetalleRecurso } from './detalle-recurso/detalle-recurso';
+import { ListaRecursosComponent } from './lista-recursos/lista-recursos';
+import { FormularioRecursoComponent } from './formulario-recurso/formulario-recurso';
+import { DetalleRecursoComponent } from './detalle-recurso/detalle-recurso';
 
 const routes: Routes = [
   {
     path: '',
-    component: ListaRecursos
+    component: ListaRecursosComponent
   },
   {
     path: 'nuevo',
-    component: FormularioRecurso
+    component: FormularioRecursoComponent
   },
   {
     path: 'editar/:id',
-    component: FormularioRecurso
+    component: FormularioRecursoComponent
   },
   {
     path: 'detalle/:id',
-    component: DetalleRecurso
+    component: DetalleRecursoComponent
   }
 ];
 

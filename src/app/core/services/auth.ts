@@ -10,8 +10,8 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  register(user: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, user);
+  register(user: any): Observable<string> {
+    return this.http.post(`${this.apiUrl}/register`, user, { responseType: 'text' });
   }
 
   login(credentials: any): Observable<any> {
@@ -32,6 +32,20 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem('token');
+  }
+
+  getUserId(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // El backend usa 'sub' como identificador del usuario
+      return payload.sub || null;
+    } catch (e) {
+      console.error('Error decodificando token', e);
+      return null;
+    }
   }
 
 }

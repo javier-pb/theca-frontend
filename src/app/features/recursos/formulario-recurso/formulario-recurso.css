@@ -1,0 +1,386 @@
+.form-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  margin: 0 0 1.5rem 0;
+  color: #2c3e50;
+  font-size: 1.75rem;
+  font-weight: 600;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.field-error {
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.tag-input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.tag-input input {
+  flex: 1;
+}
+
+.btn-add {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-add:hover {
+  background: #5a67d8;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.tag {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tag-remove {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.tag-remove:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.portada-preview {
+  margin-top: 0.75rem;
+  max-width: 150px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f7fafc;
+}
+
+.portada-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.loading {
+  text-align: center;
+  padding: 1rem;
+  background: #ebf8ff;
+  color: #3182ce;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-weight: 500;
+}
+
+.error {
+  text-align: center;
+  padding: 1rem;
+  background: #fed7d7;
+  color: #c53030;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-weight: 500;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e2e8f0;
+}
+
+.btn-cancelar {
+  background: #718096;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-cancelar:hover {
+  background: #4a5568;
+}
+
+.btn-guardar {
+  background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-guardar:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.btn-guardar:disabled, .btn-cancelar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.info-message {
+  background: #ebf8ff;
+  border-left: 4px solid #3182ce;
+  padding: 0.75rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+  color: #2c5282;
+  font-size: 0.875rem;
+}
+
+.form-row-two-columns {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Columna de portada */
+.portada-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.portada-wrapper {
+  width: 100%;
+}
+
+.portada-preview {
+  position: relative;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f7fafc;
+}
+
+.portada-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.btn-remove-portada {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.btn-remove-portada:hover {
+  background: rgba(231, 76, 60, 0.9);
+}
+
+.portada-placeholder {
+  border: 2px dashed #cbd5e0;
+  border-radius: 8px;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7fafc;
+}
+
+.btn-upload {
+  background: #667eea;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background 0.2s;
+}
+
+.btn-upload:hover {
+  background: #5a67d8;
+}
+
+#portadaInput {
+  display: none;
+}
+
+.select-with-button {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.select-with-button select {
+  flex: 1;
+}
+
+.multiselect {
+  height: auto;
+  min-height: 80px;
+  padding: 0.5rem;
+}
+
+.multiselect option {
+  padding: 0.25rem;
+}
+
+.btn-add {
+  background: #667eea;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.btn-add:hover {
+  background: #5a67d8;
+}
+
+@media (max-width: 640px) {
+  .form-row-two-columns {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .portada-column {
+    order: -1;
+  }
+}
+
+.info-message {
+  background: #ebf8ff;
+  border-left: 4px solid #3182ce;
+  padding: 0.75rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+  color: #2c5282;
+  font-size: 0.875rem;
+}
+
+label:contains("*")::before {
+  content: "*";
+  color: #e74c3c;
+  margin-right: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .form-container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .form-buttons {
+    flex-direction: column;
+  }
+
+  .btn-cancelar, .btn-guardar {
+    width: 100%;
+  }
+}

@@ -1,1 +1,43 @@
-<p>detalle-recurso works!</p>
+<div class="detalle-container">
+  @if (loading()) {
+    <div class="loading">Cargando...</div>
+  }
+
+  @if (error()) {
+    <div class="error">{{ error() }}</div>
+  }
+
+  @if (recurso() && !loading() && !error()) {
+    <h2>{{ recurso().titulo }}</h2>
+
+    @if (recurso().portada) {
+      <div class="portada">
+        <img [src]="recurso().portada" alt="Portada">
+      </div>
+    }
+
+    <div class="info">
+      <p><strong>Descripción:</strong></p>
+      <p>{{ recurso().descripcion || 'Sin descripción' }}</p>
+
+      <p><strong>Enlace:</strong></p>
+      @if (recurso().enlace) {
+        <p><a [href]="recurso().enlace" target="_blank">{{ recurso().enlace }}</a></p>
+      }
+      @if (!recurso().enlace) {
+        <p>Sin enlace</p>
+      }
+
+      <p><strong>Tipo:</strong> {{ recurso().tipo || 'No especificado' }}</p>
+      <p><strong>Versión:</strong> {{ recurso().version || 'No especificada' }}</p>
+      <p><strong>Estado de sincronización:</strong> {{ recurso().estadoSincronizacion || 'PENDIENTE' }}</p>
+      <p><strong>Creado:</strong> {{ recurso().fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</p>
+      <p><strong>Modificado:</strong> {{ recurso().fechaModificacion | date:'dd/MM/yyyy HH:mm' }}</p>
+    </div>
+
+    <div class="acciones">
+      <button class="btn-editar" [routerLink]="['/recursos/editar', recurso().id]">Editar</button>
+      <button class="btn-volver" routerLink="/recursos">Volver</button>
+    </div>
+  }
+</div>

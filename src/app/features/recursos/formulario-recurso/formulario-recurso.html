@@ -1,1 +1,142 @@
-<p>formulario-recurso works!</p>
+<div class="form-container">
+  <h2>{{ esEdicion() ? 'Editar recurso' : 'Añadir recurso' }}</h2>
+
+  <form (ngSubmit)="onSubmit()">
+    <div class="form-row-two-columns">
+      <div class="portada-column">
+        <label>Portada</label>
+        <div class="portada-wrapper">
+          @if (portada()) {
+            <div class="portada-preview">
+              <img [src]="portada()" alt="Vista previa">
+              <button type="button" class="btn-remove-portada" (click)="eliminarPortada()">✕</button>
+            </div>
+          } @else {
+            <div class="portada-placeholder">
+              <input
+                type="file"
+                (change)="onFileSelected($event)"
+                accept="image/*"
+                id="portadaInput">
+              <label for="portadaInput" class="btn-upload">+ Seleccionar imagen</label>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="datos-column">
+        <div class="form-group">
+          <label>*Título:</label>
+          <input
+            type="text"
+            [ngModel]="titulo()"
+            (ngModelChange)="titulo.set($event)"
+            name="titulo"
+            placeholder="Título del recurso">
+          @if (errorTitulo()) {
+            <p class="field-error">{{ errorTitulo() }}</p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Autor/es:</label>
+          <div class="select-with-button">
+            <select [ngModel]="autoresIds()" (ngModelChange)="autoresIds.set($event)" name="autoresIds">
+              <option value="">Seleccione autor/es</option>
+              @for (autor of autoresDisponibles(); track autor.id) {
+                <option [value]="autor.id">{{ autor.nombre }}</option>
+              }
+            </select>
+            <button type="button" class="btn-add" (click)="irATipos()">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>*Tipo de recurso:</label>
+        <div class="select-with-button">
+          <select [ngModel]="tipoId()" (ngModelChange)="tipoId.set($event)" name="tipoId">
+            <option value="">Seleccione un tipo</option>
+            @for (tipo of tiposDisponibles(); track tipo.id) {
+              <option [value]="tipo.id">{{ tipo.nombre }}</option>
+            }
+          </select>
+          <button type="button" class="btn-add" (click)="irATipos()">+</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Versión:</label>
+        <input
+          type="text"
+          [ngModel]="version()"
+          (ngModelChange)="version.set($event)"
+          name="version"
+          placeholder="1.0">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Descripción:</label>
+      <textarea
+        [ngModel]="descripcion()"
+        (ngModelChange)="descripcion.set($event)"
+        name="descripcion"
+        rows="4"
+        placeholder="Escriba una breve descripción del recurso..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Enlace:</label>
+      <input
+        type="url"
+        [ngModel]="enlace()"
+        (ngModelChange)="enlace.set($event)"
+        name="enlace"
+        placeholder="https://www...">
+    </div>
+
+    <div class="form-group">
+      <label>Añadir categoría/s:</label>
+      <div class="select-with-button">
+        <select [ngModel]="categoriasIds()" (ngModelChange)="categoriasIds.set($event)" name="categoriasIds">
+          <option value="">Seleccione categoría/s</option>
+          @for (categoria of categoriasDisponibles(); track categoria.id) {
+            <option [value]="categoria.id">{{ categoria.nombre }}</option>
+          }
+        </select>
+        <button type="button" class="btn-add" (click)="irACategorias()">+</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Añadir etiqueta/s:</label>
+      <div class="select-with-button">
+        <select [ngModel]="etiquetasIds()" (ngModelChange)="etiquetasIds.set($event)" name="etiquetasIds">
+          <option value="">Seleccione etiqueta/s</option>
+          @for (etiqueta of etiquetasDisponibles(); track etiqueta.id) {
+            <option [value]="etiqueta.id">{{ etiqueta.nombre }}</option>
+          }
+        </select>
+        <button type="button" class="btn-add" (click)="irAEtiquetas()">+</button>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="loading">Guardando...</div>
+    }
+
+    @if (errorGeneral()) {
+      <div class="error">{{ errorGeneral() }}</div>
+    }
+
+    <div class="form-buttons">
+      <button type="button" class="btn-cancelar" routerLink="/recursos">Cancelar</button>
+      <button type="submit" class="btn-guardar" [disabled]="loading()">
+        {{ esEdicion() ? 'Actualizar' : 'Crear' }} recurso
+      </button>
+    </div>
+  </form>
+</div>

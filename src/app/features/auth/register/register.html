@@ -3,20 +3,47 @@
     <h2>Registro</h2>
     <form (ngSubmit)="onSubmit()">
       <div class="form-group">
-        <label>Usuario</label>
-        <input type="text" [(ngModel)]="nombre" name="nombre" required>
+        <input type="text" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" name="nombre"
+               placeholder="Nombre de usuario" required>
+        @if (errorNombre()) {
+          <p class="error">{{ errorNombre() }}</p>
+        }
       </div>
+
       <div class="form-group">
-        <label>Email</label>
-        <input type="email" [(ngModel)]="correo" name="correo" required>
+        <input type="email" [ngModel]="correo()" (ngModelChange)="correo.set($event)" name="correo"
+               placeholder="Correo electrónico" required>
+        @if (errorEmail()) {
+          <p class="error">{{ errorEmail() }}</p>
+        }
       </div>
+
       <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" [(ngModel)]="contrasena" name="contrasena" required>
+        <input type="password" [ngModel]="contrasena()" (ngModelChange)="contrasena.set($event)"
+               name="contrasena" placeholder="Contraseña" required>
+        @if (errorContrasena()) {
+          <p class="error">{{ errorContrasena() }}</p>
+        }
       </div>
-      <button type="submit" [disabled]="loading">Registrarse</button>
-      <p *ngIf="error" class="error">{{ error }}</p>
+
+      <div class="form-group">
+        <input type="password" [ngModel]="repetirContrasena()" (ngModelChange)="repetirContrasena.set($event)"
+               name="repetirContrasena" placeholder="Repita contraseña" required>
+        @if (errorPasswordMatch()) {
+          <p class="error">{{ errorPasswordMatch() }}</p>
+        }
+      </div>
+
+      @if (errorGeneral()) {
+        <p class="error">{{ errorGeneral() }}</p>
+      }
+
+      @if (mensajeExito()) {
+        <p class="success">{{ mensajeExito() }}</p>
+      }
+
+      <button type="submit" [disabled]="loading()">Registrarse</button>
     </form>
-    <p>¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+    <p>¿Ya tiene cuenta en Theca? <a routerLink="/login">Inicie sesión</a></p>
   </div>
 </div>
