@@ -164,4 +164,33 @@ describe('AuthService', () => {
     });
   });
 
+  describe('getCurrentUser', () => {
+    it('should return decoded token payload', () => {
+      const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0OCIsImlhdCI6MTc3ODE3MTczNCwiZXhwIjoxNzc4MjU4MTM0fQ.us846olgl1nJTzyciZjy5QzfUDiPrBKRfgXo_lfrmXwt-_8Vbvc6hLwb5CxDLEmBH3WD2SLEx4QzgpN8I4vEXw';
+      spyOn(service, 'getToken').and.returnValue(token);
+
+      const user = service.getCurrentUser();
+
+      expect(user).toEqual({ sub: 'test8', iat: 1778171734, exp: 1778258134 });
+    });
+
+    it('should return null if no token exists', () => {
+      spyOn(service, 'getToken').and.returnValue(null);
+
+      const user = service.getCurrentUser();
+
+      expect(user).toBeNull();
+    });
+
+    it('should return null if token is invalid', () => {
+      spyOn(service, 'getToken').and.returnValue('invalid.token');
+      spyOn(console, 'error');
+
+      const user = service.getCurrentUser();
+
+      expect(user).toBeNull();
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
 });

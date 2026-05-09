@@ -1,0 +1,74 @@
+<div class="perfil-container">
+  <div class="perfil-content">
+    <!-- Título: -->
+    <h1 class="page-title">PERFIL</h1>
+
+    @if (loading()) {
+      <div class="loading">Cargando...</div>
+    } @else if (error()) {
+      <div class="error">{{ error() }}</div>
+    } @else {
+      <div class="perfil-info">
+        <div class="info-group">
+          <label>Nombre de usuario:</label>
+          <span class="info-value">{{ usuario()?.nombre }}</span>
+        </div>
+
+        <div class="info-group">
+          <label>Correo electrónico:</label>
+          <span class="info-value">{{ usuario()?.correo }}</span>
+        </div>
+
+        <div class="info-group">
+          <label>Fecha de creación de la cuenta:</label>
+          <span class="info-value">{{ usuario()?.fechaCreacion }}</span>
+        </div>
+      </div>
+
+      <div class="perfil-actions">
+        <button class="btn-cambiar-password" (click)="irCambiarContrasena()">
+          CAMBIAR CONTRASEÑA
+        </button>
+        <button class="btn-eliminar-cuenta" (click)="abrirModalEliminar()">
+          ELIMINAR CUENTA
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Modal para eliminar cuenta: -->
+  @if (mostrarModalEliminar()) {
+    <div class="modal-overlay" (click)="cerrarModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <h2>Eliminar cuenta</h2>
+        <p>Esta acción es irreversible. Se eliminarán todos sus recursos.</p>
+
+        <div class="form-group">
+          <label>Introduzca su contraseña para confirmar:</label>
+          <input
+            type="password"
+            [(ngModel)]="contrasenaConfirmacion"
+            placeholder="Contraseña"
+            [disabled]="eliminando()">
+        </div>
+
+        @if (errorEliminar()) {
+          <p class="error-message">{{ errorEliminar() }}</p>
+        }
+
+        <div class="modal-buttons">
+          <button class="btn-cancelar" (click)="cerrarModal()" [disabled]="eliminando()">
+            Cancelar
+          </button>
+          <button class="btn-confirmar-eliminar" (click)="confirmarEliminarCuenta()" [disabled]="eliminando()">
+            @if (eliminando()) {
+              Eliminando...
+            } @else {
+              Eliminar cuenta
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

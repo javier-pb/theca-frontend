@@ -40,8 +40,20 @@ export class AuthService {
 
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      // El backend usa 'sub' como identificador del usuario
       return payload.sub || null;
+    } catch (e) {
+      console.error('Error decodificando token', e);
+      return null;
+    }
+  }
+
+  getCurrentUser(): any {
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload;
     } catch (e) {
       console.error('Error decodificando token', e);
       return null;
