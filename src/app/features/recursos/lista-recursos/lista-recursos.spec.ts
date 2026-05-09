@@ -3,6 +3,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
 import { ListaRecursosComponent } from './lista-recursos';
 import { RecursoService } from '../../../core/services/recurso';
+import { AuthService } from '../../../core/services/auth';
 import { Component } from '@angular/core';
 
 @Component({ template: '' })
@@ -14,14 +15,20 @@ describe('ListaRecursosComponent', () => {
   let component: ListaRecursosComponent;
   let fixture: ComponentFixture<ListaRecursosComponent>;
   let mockRecursoService: jasmine.SpyObj<RecursoService>;
+  let mockAuthService: jasmine.SpyObj<AuthService>;
 
   const mockRecursos = [
     { id: '1', titulo: 'Recurso 1', descripcion: 'Descripción 1', tipo: 'libro' },
     { id: '2', titulo: 'Recurso 2', descripcion: 'Descripción 2', tipo: 'artículo' }
   ];
 
+  const mockUserId = 'user123';
+
   beforeEach(async () => {
     mockRecursoService = jasmine.createSpyObj('RecursoService', ['getAll', 'delete']);
+    mockAuthService = jasmine.createSpyObj('AuthService', ['getUserId', 'getToken']);
+
+    mockAuthService.getUserId.and.returnValue(mockUserId);
 
     await TestBed.configureTestingModule({
       imports: [
@@ -33,7 +40,8 @@ describe('ListaRecursosComponent', () => {
         ])
       ],
       providers: [
-        { provide: RecursoService, useValue: mockRecursoService }
+        { provide: RecursoService, useValue: mockRecursoService },
+        { provide: AuthService, useValue: mockAuthService }
       ]
     }).compileComponents();
 
@@ -59,12 +67,13 @@ describe('ListaRecursosComponent', () => {
   });
 
   describe('cargarRecursos', () => {
-    it('should load recursos successfully', fakeAsync(() => {
+    it('should load recursos successfully with userId', fakeAsync(() => {
       mockRecursoService.getAll.and.returnValue(of(mockRecursos));
 
       component.cargarRecursos();
       tick();
 
+      expect(mockRecursoService.getAll).toHaveBeenCalledWith(mockUserId);
       expect(component.recursos()).toEqual(mockRecursos);
       expect(component.loading()).toBe(false);
       expect(component.error()).toBe('');
@@ -76,9 +85,21 @@ describe('ListaRecursosComponent', () => {
       component.cargarRecursos();
       tick();
 
+      expect(mockRecursoService.getAll).toHaveBeenCalledWith(mockUserId);
       expect(component.recursos()).toEqual([]);
       expect(component.loading()).toBe(false);
       expect(component.error()).toBe('Error al cargar los recursos');
+    }));
+
+    it('should handle null userId', fakeAsync(() => {
+      mockAuthService.getUserId.and.returnValue(null);
+      mockRecursoService.getAll.and.returnValue(of(mockRecursos));
+
+      component.cargarRecursos();
+      tick();
+
+      expect(mockRecursoService.getAll).toHaveBeenCalledWith(undefined);
+      expect(component.recursos()).toEqual(mockRecursos);
     }));
   });
 
@@ -101,7 +122,6 @@ describe('ListaRecursosComponent', () => {
 
   describe('cerrarModal', () => {
     it('should close modal and clear recursoAEliminar', () => {
-      // Activar señal primero
       component.mostrarModal.set(true);
       component.recursoAEliminar.set(mockRecursos[0]);
 

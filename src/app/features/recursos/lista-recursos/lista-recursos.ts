@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { RecursoService } from '../../../core/services/recurso';
+import { AuthService } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-lista-recursos',
@@ -19,7 +20,10 @@ export class ListaRecursosComponent implements OnInit {
   mostrarModal = signal(false);
   recursoAEliminar = signal<any>(null);
 
-  constructor(private recursoService: RecursoService) {}
+  constructor(
+    private recursoService: RecursoService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.cargarRecursos();
@@ -29,7 +33,9 @@ export class ListaRecursosComponent implements OnInit {
     this.loading.set(true);
     this.error.set('');
 
-    this.recursoService.getAll().subscribe({
+    const userId = this.authService.getUserId();
+
+    this.recursoService.getAll(userId ?? undefined).subscribe({
       next: (data) => {
         this.recursos.set(data);
         this.loading.set(false);
@@ -38,7 +44,7 @@ export class ListaRecursosComponent implements OnInit {
         this.error.set('Error al cargar los recursos');
         this.loading.set(false);
       }
-    });
+});
   }
 
   confirmarEliminar(recurso: any): void {
