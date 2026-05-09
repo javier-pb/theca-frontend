@@ -1,6 +1,11 @@
 <div class="register-container">
   <div class="register-card">
-    <h2>Registro</h2>
+    <!-- Logo: -->
+    <div class="logo-container">
+      <img src="assets/images/Logo.png" alt="Theca Logo" class="logo-image">
+    </div>
+
+    <!-- Formulario: -->
     <form (ngSubmit)="onSubmit()">
       <div class="form-group">
         <input type="text" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" name="nombre"
@@ -35,15 +40,20 @@
       </div>
 
       @if (errorGeneral()) {
-        <p class="error">{{ errorGeneral() }}</p>
+        <p class="error error-general">{{ errorGeneral() }}</p>
       }
 
       @if (mensajeExito()) {
         <p class="success">{{ mensajeExito() }}</p>
       }
 
-      <button type="submit" [disabled]="loading()">Registrarse</button>
+      <button type="submit" class="btn-register" [disabled]="loading()">
+        Registrarse
+      </button>
     </form>
-    <p>¿Ya tiene cuenta en Theca? <a routerLink="/login">Inicie sesión</a></p>
+
+    <div class="login-link">
+      <p>¿Ya tiene cuenta en Theca? <a routerLink="/login">Inicie sesión</a></p>
+    </div>
   </div>
 </div>

@@ -1,1 +1,18 @@
-/* You can add global styles to this file, and also import other style files */
+/* CSS reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  background-color: #8FAEBA; /* Tu color de fondo */
+}
+
+app-root {
+  display: block;
+  height: 100%;
+  width: 100%;
+}

@@ -1,6 +1,11 @@
 <div class="login-container">
   <div class="login-card">
-    <h2>Iniciar sesión</h2>
+    <!-- Logo: -->
+    <div class="logo-container">
+      <img src="assets/images/Logo.png" alt="Theca Logo" class="logo-image">
+    </div>
+
+    <!-- Formulario: -->
     <form (ngSubmit)="onSubmit()">
       <div class="form-group">
         <input type="text" [ngModel]="username()" (ngModelChange)="username.set($event)" name="username"
@@ -18,12 +23,15 @@
         }
       </div>
 
-      <button type="submit" [disabled]="loading()">Iniciar sesión</button>
+      <button type="submit" class="btn-login" [disabled]="loading()">Iniciar sesión</button>
 
       @if (error()) {
         <p class="error">{{ error() }}</p>
       }
     </form>
-    <p>¿No tienes cuenta? <a routerLink="/register">Regístrate</a></p>
+
+    <div class="register-link">
+      <p>¿No tiene cuenta en Theca? <a routerLink="/register">Cree una aquí</a></p>
+    </div>
   </div>
 </div>
