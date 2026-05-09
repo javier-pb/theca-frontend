@@ -7,20 +7,20 @@ import { AuthService } from '../../../core/services/auth';
   selector: 'app-menu-lateral',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  templateUrl: './menu-lateral.html',
-  styleUrls: ['./menu-lateral.css']
+  templateUrl: './menu.html',
+  styleUrls: ['./menu.css']
 })
-// Componente para el menú lateral:
-export class MenuLateralComponent {
+// Componente para el menú:
+export class MenuComponent {
 
   constructor(
     private authService: AuthService,
     private router: Router
   ) {}
 
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  // Método para verificar si una ruta está activa:
+  isActive(route: string): boolean {
+    return this.router.url === route;
   }
 
 }

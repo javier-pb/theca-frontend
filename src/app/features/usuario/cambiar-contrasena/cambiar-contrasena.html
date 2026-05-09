@@ -1,0 +1,65 @@
+<div class="cambiar-contrasena-container">
+  <div class="cambiar-contrasena-content">
+    <!-- Título -->
+    <h1 class="page-title">CAMBIAR CONTRASEÑA</h1>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <input
+          type="password"
+          [ngModel]="contrasenaActual()"
+          (ngModelChange)="contrasenaActual.set($event)"
+          name="contrasenaActual"
+          placeholder="Introduzca la contraseña actual"
+          required>
+        @if (errorContrasenaActual()) {
+          <p class="error-message">{{ errorContrasenaActual() }}</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <input
+          type="password"
+          [ngModel]="nuevaContrasena()"
+          (ngModelChange)="nuevaContrasena.set($event)"
+          name="nuevaContrasena"
+          placeholder="Introduzca la nueva contraseña"
+          required>
+        @if (errorNuevaContrasena()) {
+          <p class="error-message">{{ errorNuevaContrasena() }}</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <input
+          type="password"
+          [ngModel]="repetirContrasena()"
+          (ngModelChange)="repetirContrasena.set($event)"
+          name="repetirContrasena"
+          placeholder="Repita la nueva contraseña"
+          required>
+        @if (errorRepetirContrasena()) {
+          <p class="error-message">{{ errorRepetirContrasena() }}</p>
+        }
+      </div>
+
+      @if (errorGeneral()) {
+        <p class="error-general">{{ errorGeneral() }}</p>
+      }
+
+      @if (mensajeExito()) {
+        <p class="success-message">{{ mensajeExito() }}</p>
+      }
+
+      <div class="form-buttons">
+        <button type="submit" class="btn-cambiar" [disabled]="loading()">
+          @if (loading()) {
+            Cambiando...
+          } @else {
+            Cambiar
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

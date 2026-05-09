@@ -1,0 +1,31 @@
+<nav class="bottom-nav">
+  <a routerLink="/recursos" routerLinkActive="active" class="nav-item">
+    <img [src]="isActive('/recursos') ? 'assets/images/Recurso (azul).png' : 'assets/images/Recurso.png'"
+         alt="Recursos" class="nav-icon">
+    <span>Recursos</span>
+  </a>
+
+  <a routerLink="/categorias" routerLinkActive="active" class="nav-item">
+    <img [src]="isActive('/categorias') ? 'assets/images/Categoría (azul).png' : 'assets/images/Categoría.png'"
+         alt="Categorías" class="nav-icon">
+    <span>Categorías</span>
+  </a>
+
+  <a routerLink="/etiquetas" routerLinkActive="active" class="nav-item">
+    <img [src]="isActive('/etiquetas') ? 'assets/images/Etiqueta (azul).png' : 'assets/images/Etiqueta.png'"
+         alt="Etiquetas" class="nav-icon">
+    <span>Etiquetas</span>
+  </a>
+
+  <a routerLink="/autores" routerLinkActive="active" class="nav-item">
+    <img [src]="isActive('/autores') ? 'assets/images/Autor (azul).png' : 'assets/images/Autor.png'"
+         alt="Autores" class="nav-icon">
+    <span>Autores</span>
+  </a>
+
+  <a routerLink="/tipos" routerLinkActive="active" class="nav-item">
+    <img [src]="isActive('/tipos') ? 'assets/images/Tipo (azul).png' : 'assets/images/Tipo.png'"
+         alt="Tipos" class="nav-icon">
+    <span>Tipos</span>
+  </a>
+</nav>

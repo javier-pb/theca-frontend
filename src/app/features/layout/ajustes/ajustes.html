@@ -1,0 +1,26 @@
+<div class="ajustes-container">
+  <!-- Botón de ajustes -->
+  <button
+    class="btn-ajustes"
+    (click)="toggleMenu()"
+    [class.active]="menuAbierto"
+    aria-label="Ajustes">
+    <img src="assets/images/Ajustes.png" alt="Ajustes" class="icono-ajustes">
+  </button>
+
+  <!-- Menú contextual -->
+  @if (menuAbierto) {
+    <div class="menu-contextual">
+      <button class="menu-item" (click)="irPerfil()">
+        <span>Perfil</span>
+      </button>
+      <button class="menu-item" (click)="irCambiarContrasena()">
+        <span>Cambiar contraseña</span>
+      </button>
+      <hr class="menu-divider">
+      <button class="menu-item logout" (click)="cerrarSesion()">
+        <span>Cerrar sesión</span>
+      </button>
+    </div>
+  }
+</div>
