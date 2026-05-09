@@ -18,7 +18,7 @@
 /* Título: */
 .page-title {
   text-align: center;
-  color: #5C7D8A;
+  color: #5980a6;
   margin-bottom: 2.5rem;
   font-size: 2.2rem;
   font-weight: 700;
@@ -60,7 +60,7 @@
 .btn-cambiar-password {
   width: 100%;
   padding: 0.8rem;
-  background-color: #5C7D8A;
+  background-color: #5980a6;
   color: white;
   border: none;
   border-radius: 2px;
