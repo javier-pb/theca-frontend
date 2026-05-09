@@ -18,7 +18,7 @@
 /* Título: */
 .page-title {
   text-align: center;
-  color: #5C7D8A;
+  color: #5980a6;
   margin-bottom: 2.5rem;
   font-size: 2rem;
   font-weight: 700;
@@ -55,7 +55,7 @@ form {
 .form-group input:focus {
   outline: none;
   background-color: #e8f1f5;
-  box-shadow: 0 0 0 2px #5C7D8A;
+  box-shadow: 0 0 0 2px #5980a6;
 }
 
 /* Mensajes de error: */
@@ -95,7 +95,7 @@ form {
 
 .btn-cambiar {
   padding: 0.8rem 3rem;
-  background-color: #5C7D8A;
+  background-color: #5980a6;
   color: white;
   border: none;
   border-radius: 2px;

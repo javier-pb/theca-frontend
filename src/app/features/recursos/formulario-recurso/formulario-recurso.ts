@@ -113,6 +113,13 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
     this.portada.set(null);
   }
 
+  abrirSelectorArchivo(): void {
+    const input = document.getElementById('portadaInput') as HTMLInputElement;
+    if (input) {
+      input.click();
+    }
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
