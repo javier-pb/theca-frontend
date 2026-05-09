@@ -3,7 +3,7 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 
 import { RecursoService } from './recurso';
 
-// Test unitario para el RecursoService:
+// Test unitario para el servicio recursos:
 describe('RecursoService', () => {
 
   let service: RecursoService;
@@ -27,7 +27,7 @@ describe('RecursoService', () => {
   });
 
   describe('getAll', () => {
-    it('should call GET /api/recursos and return data', () => {
+    it('should call GET /api/recursos without usuarioId when no param provided', () => {
       const mockRecursos = [
         { id: '1', titulo: 'Recurso 1' },
         { id: '2', titulo: 'Recurso 2' }
@@ -40,6 +40,23 @@ describe('RecursoService', () => {
 
       const req = httpMock.expectOne('/api/recursos');
       expect(req.request.method).toBe('GET');
+      expect(req.request.url).toBe('/api/recursos');
+      req.flush(mockRecursos);
+    });
+
+    it('should call GET /api/recursos with usuarioId when param provided', () => {
+      const mockRecursos = [
+        { id: '1', titulo: 'Recurso 1', usuarioId: 'user123' }
+      ];
+      const usuarioId = 'user123';
+
+      service.getAll(usuarioId).subscribe(data => {
+        expect(data).toEqual(mockRecursos);
+      });
+
+      const req = httpMock.expectOne('/api/recursos?usuarioId=user123');
+      expect(req.request.method).toBe('GET');
+      expect(req.request.urlWithParams).toContain('usuarioId=user123');
       req.flush(mockRecursos);
     });
   });

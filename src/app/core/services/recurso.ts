@@ -10,8 +10,9 @@ export class RecursoService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  getAll(usuarioId?: string): Observable<any[]> {
+    const params = usuarioId ? `?usuarioId=${usuarioId}` : '';
+    return this.http.get<any[]>(`${this.apiUrl}${params}`);
   }
 
   getById(id: string): Observable<any> {
