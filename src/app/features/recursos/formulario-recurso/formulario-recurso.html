@@ -12,7 +12,7 @@
               <div class="portada-container">
                 @if (portada()) {
                   <div class="portada-preview">
-                    <img [src]="portada()" alt="Vista previa">
+                    <img [src]="getPortadaUrl(portada())" alt="Vista previa">
                     <button type="button" class="btn-remove-portada" (click)="eliminarPortada()">✕</button>
                   </div>
                 } @else {

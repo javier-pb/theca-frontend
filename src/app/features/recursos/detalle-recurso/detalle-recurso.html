@@ -8,36 +8,130 @@
   }
 
   @if (recurso() && !loading() && !error()) {
-    <h2>{{ recurso().titulo }}</h2>
+    <!-- Título: -->
+    <h1 class="page-title">DETALLE DEL RECURSO</h1>
 
-    @if (recurso().portada) {
-      <div class="portada">
-        <img [src]="recurso().portada" alt="Portada">
+    <div class="detalle-content">
+      <!-- Portada: -->
+      <div class="portada-section">
+        <div class="portada-wrapper">
+          @if (actualizandoPortada()) {
+            <div class="portada-loading">
+              <span>Actualizando...</span>
+            </div>
+          }
+
+          @if (recurso().portada) {
+            <div class="portada-preview">
+              <img [src]="getPortadaUrl(recurso().portada)" alt="Portada" class="portada-img">
+              <button type="button" class="btn-edit-portada" (click)="abrirSelectorArchivo()" [disabled]="actualizandoPortada()">
+                <img src="assets/images/Editar.png" alt="Editar" class="icon-edit">
+              </button>
+              <input
+                type="file"
+                (change)="onPortadaSeleccionada($event)"
+                accept="image/*"
+                id="portadaInput"
+                style="display: none">
+            </div>
+          } @else {
+            <div class="portada-placeholder">
+              <img src="assets/images/Imagen.png" alt="Portada" class="portada-img">
+              <button type="button" class="btn-edit-portada" (click)="abrirSelectorArchivo()" [disabled]="actualizandoPortada()">
+                <img src="assets/images/Editar.png" alt="Editar" class="icon-edit">
+              </button>
+              <input
+                type="file"
+                (change)="onPortadaSeleccionada($event)"
+                accept="image/*"
+                id="portadaInput"
+                style="display: none">
+            </div>
+          }
+        </div>
       </div>
-    }
 
-    <div class="info">
-      <p><strong>Descripción:</strong></p>
-      <p>{{ recurso().descripcion || 'Sin descripción' }}</p>
+      <!-- Información del recurso: -->
+      <div class="info-section">
+        <!-- Título: -->
+        <div class="info-group">
+          <span class="info-label">Título:</span>
+          <span class="info-value">{{ recurso().titulo || '' }}</span>
+        </div>
 
-      <p><strong>Enlace:</strong></p>
-      @if (recurso().enlace) {
-        <p><a [href]="recurso().enlace" target="_blank">{{ recurso().enlace }}</a></p>
-      }
-      @if (!recurso().enlace) {
-        <p>Sin enlace</p>
-      }
+        <!-- Autor/es: -->
+        <div class="info-group">
+          <span class="info-label">Autor/es:</span>
+          <span class="info-value">{{ recurso().autores || '' }}</span>
+        </div>
 
-      <p><strong>Tipo:</strong> {{ recurso().tipo || 'No especificado' }}</p>
-      <p><strong>Versión:</strong> {{ recurso().version || 'No especificada' }}</p>
-      <p><strong>Estado de sincronización:</strong> {{ recurso().estadoSincronizacion || 'PENDIENTE' }}</p>
-      <p><strong>Creado:</strong> {{ recurso().fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</p>
-      <p><strong>Modificado:</strong> {{ recurso().fechaModificacion | date:'dd/MM/yyyy HH:mm' }}</p>
+        <!-- Tipo de recurso: -->
+        <div class="info-group">
+          <span class="info-label">Tipo de recurso:</span>
+          <span class="info-value">{{ recurso().tipo || '' }}</span>
+        </div>
+
+        <!-- Versión: -->
+        <div class="info-group">
+          <span class="info-label">Versión:</span>
+          <span class="info-value">{{ recurso().version || '' }}</span>
+        </div>
+
+        <!-- Descripción: -->
+        <div class="info-group description">
+          <span class="info-label">Descripción:</span>
+          <span class="info-value description-text">{{ recurso().descripcion || '' }}</span>
+        </div>
+
+        <!-- Categorías: -->
+        <div class="info-group">
+          <span class="info-label">Categoría/s:</span>
+          <span class="info-value">{{ recurso().categorias || '' }}</span>
+        </div>
+
+        <!-- Etiquetas: -->
+        <div class="info-group">
+          <span class="info-label">Etiquetas:</span>
+          <span class="info-value">{{ recurso().etiquetas || '' }}</span>
+        </div>
+
+        <!-- Fecha de creación: -->
+        <div class="info-group">
+          <span class="info-label">Fecha de creación:</span>
+          <span class="info-value">{{ formatearFechaLocal(recurso().fechaCreacion) }}</span>
+        </div>
+
+        <!-- Fecha de modificación: -->
+        <div class="info-group">
+          <span class="info-label">Fecha de modificación:</span>
+          <span class="info-value">{{ formatearFechaLocal(recurso().fechaModificacion) }}</span>
+        </div>
+
+        <!-- Botones de acción: -->
+        <div class="acciones">
+          <button class="btn-editar-recurso" [routerLink]="['/recursos/editar', recurso().id]">
+            Editar recurso
+          </button>
+          <button class="btn-eliminar-recurso" (click)="confirmarEliminar()">
+            Eliminar recurso
+          </button>
+        </div>
+      </div>
     </div>
+  }
 
-    <div class="acciones">
-      <button class="btn-editar" [routerLink]="['/recursos/editar', recurso().id]">Editar</button>
-      <button class="btn-volver" routerLink="/recursos">Volver</button>
+  <!-- Modal de confirmación para eliminar: -->
+  @if (mostrarModal()) {
+    <div class="modal-overlay" (click)="cerrarModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <h3>Confirmar eliminación</h3>
+        <p>¿Está seguro de que quiere eliminar el recurso "{{ recurso().titulo }}"?</p>
+        <p class="advertencia">Esta acción no se puede deshacer.</p>
+        <div class="modal-buttons">
+          <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button class="btn-confirmar" (click)="eliminar()">Eliminar</button>
+        </div>
+      </div>
     </div>
   }
 </div>

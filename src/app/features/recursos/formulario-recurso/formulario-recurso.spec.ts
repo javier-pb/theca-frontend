@@ -14,7 +14,7 @@ import { Component } from '@angular/core';
 @Component({ template: '' })
 class DummyComponent {}
 
-// Test unitario para el formulario de recursos:
+// Test unitario para el formulario de recurso:
 describe('FormularioRecursoComponent', () => {
 
   let component: FormularioRecursoComponent;
@@ -160,6 +160,52 @@ describe('FormularioRecursoComponent', () => {
       });
     });
 
+    describe('getPortadaUrl', () => {
+      it('should return empty string when portada is null or undefined', () => {
+        expect(component.getPortadaUrl('')).toBe('');
+        expect(component.getPortadaUrl(null as any)).toBe('');
+      });
+
+      it('should return unchanged URL when portada starts with http', () => {
+        const url = 'https://ejemplo.com/imagen.jpg';
+        expect(component.getPortadaUrl(url)).toBe(url);
+      });
+
+      it('should return unchanged URL when portada starts with data:', () => {
+        const dataUrl = 'data:image/jpeg;base64,abc123';
+        expect(component.getPortadaUrl(dataUrl)).toBe(dataUrl);
+      });
+
+      it('should add base64 prefix when portada is base64 string', () => {
+        const base64 = 'abc123def456';
+        expect(component.getPortadaUrl(base64)).toBe('data:image/jpeg;base64,' + base64);
+      });
+    });
+
+    describe('abrirSelectorArchivo', () => {
+      it('should open file selector when called', () => {
+        const clickSpy = jasmine.createSpy('click');
+        const mockInput = { click: clickSpy };
+        spyOn(document, 'getElementById').and.returnValue(mockInput as any);
+
+        component.abrirSelectorArchivo();
+
+        expect(clickSpy).toHaveBeenCalled();
+      });
+    });
+
+    describe('onFileSelected', () => {
+      it('should handle file selection', () => {
+        const file = new File(['dummy'], 'test.png', { type: 'image/png' });
+        const event = { target: { files: [file] } } as any;
+        const readerSpy = spyOn(FileReader.prototype, 'readAsDataURL');
+
+        component.onFileSelected(event);
+
+        expect(readerSpy).toHaveBeenCalled();
+      });
+    });
+
     describe('Create Resource', () => {
       beforeEach(() => {
         component.titulo.set('New Resource');
@@ -297,6 +343,20 @@ describe('FormularioRecursoComponent', () => {
       expect(component.titulo()).toBe('Recurso existente');
       expect(component.version()).toBe('2.0');
       expect(component.descripcion()).toBe('Descripción existente');
+    });
+
+    it('should normalize portada with base64 prefix when loading', () => {
+      const dataConPortadaBase64 = {
+        ...mockRecursoData,
+        portada: 'base64string'
+      };
+      recursoService.getById.and.returnValue(of(dataConPortadaBase64));
+
+      fixture = TestBed.createComponent(FormularioRecursoComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      expect(component.portada()).toBe('data:image/jpeg;base64,base64string');
     });
 
     it('should update resource', fakeAsync(() => {
