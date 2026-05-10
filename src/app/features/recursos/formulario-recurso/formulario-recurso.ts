@@ -110,7 +110,13 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.titulo.set(data.titulo || '');
         this.autoresTexto.set(data.autores?.map((a: any) => a.nombre).join(', ') || '');
-        this.portada.set(data.portada || null);
+
+        let portadaNormalizada = data.portada || null;
+        if (portadaNormalizada && !portadaNormalizada.startsWith('data:') && !portadaNormalizada.startsWith('http')) {
+          portadaNormalizada = 'data:image/jpeg;base64,' + portadaNormalizada;
+        }
+        this.portada.set(portadaNormalizada);
+
         this.tipoId.set(data.tipo?.id || '');
         this.version.set(data.version || '');
         this.descripcion.set(data.descripcion || '');
@@ -237,6 +243,14 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  getPortadaUrl(portada: string | null): string {
+    if (!portada) return '';
+    if (portada.startsWith('http') || portada.startsWith('data:')) {
+      return portada;
+    }
+    return 'data:image/jpeg;base64,' + portada;
   }
 
 }
