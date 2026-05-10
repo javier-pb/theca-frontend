@@ -44,32 +44,13 @@ export class ListaRecursosComponent implements OnInit {
         this.error.set('Error al cargar los recursos');
         this.loading.set(false);
       }
-});
+    });
   }
 
-  confirmarEliminar(recurso: any): void {
-    this.recursoAEliminar.set(recurso);
-    this.mostrarModal.set(true);
-  }
-
-  eliminar(): void {
-    if (this.recursoAEliminar()) {
-      this.recursoService.delete(this.recursoAEliminar().id).subscribe({
-        next: () => {
-          this.cargarRecursos();
-          this.cerrarModal();
-        },
-        error: () => {
-          this.error.set('Error al eliminar el recurso');
-          this.cerrarModal();
-        }
-      });
-    }
-  }
-
-  cerrarModal(): void {
-    this.mostrarModal.set(false);
-    this.recursoAEliminar.set(null);
+  getPortadaUrl(portada: string): string {
+    if (!portada) return '';
+    if (portada.startsWith('http')) return portada;
+    return 'data:image/jpeg;base64,' + portada;
   }
 
 }

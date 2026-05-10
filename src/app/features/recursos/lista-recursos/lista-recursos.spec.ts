@@ -18,8 +18,9 @@ describe('ListaRecursosComponent', () => {
   let mockAuthService: jasmine.SpyObj<AuthService>;
 
   const mockRecursos = [
-    { id: '1', titulo: 'Recurso 1', descripcion: 'Descripción 1', tipo: 'libro' },
-    { id: '2', titulo: 'Recurso 2', descripcion: 'Descripción 2', tipo: 'artículo' }
+    { id: '1', titulo: 'Recurso 1', descripcion: 'Descripción 1', portada: null },
+    { id: '2', titulo: 'Recurso 2', descripcion: 'Descripción 2', portada: 'base64imagedata' },
+    { id: '3', titulo: 'Recurso 3', descripcion: 'Descripción 3', portada: 'https://ejemplo.com/imagen.jpg' }
   ];
 
   const mockUserId = 'user123';
@@ -54,16 +55,18 @@ describe('ListaRecursosComponent', () => {
     mockRecursoService.delete.calls.reset();
   });
 
-  it('should create the component', () => {
-    expect(component).toBeTruthy();
-  });
+  describe('Component Creation', () => {
+    it('should create the component', () => {
+      expect(component).toBeTruthy();
+    });
 
-  it('should initialize with empty recursos and loading true', () => {
-    expect(component.recursos()).toEqual([]);
-    expect(component.loading()).toBe(true);
-    expect(component.error()).toBe('');
-    expect(component.mostrarModal()).toBe(false);
-    expect(component.recursoAEliminar()).toBeNull();
+    it('should initialize with empty recursos and loading true', () => {
+      expect(component.recursos()).toEqual([]);
+      expect(component.loading()).toBe(true);
+      expect(component.error()).toBe('');
+      expect(component.mostrarModal()).toBe(false);
+      expect(component.recursoAEliminar()).toBeNull();
+    });
   });
 
   describe('cargarRecursos', () => {
@@ -103,77 +106,39 @@ describe('ListaRecursosComponent', () => {
     }));
   });
 
-  it('should call cargarRecursos on init', () => {
-    spyOn(component, 'cargarRecursos');
-    component.ngOnInit();
-    expect(component.cargarRecursos).toHaveBeenCalled();
-  });
+  describe('getPortadaUrl', () => {
+    it('should return empty string when portada is null or undefined', () => {
+      expect(component.getPortadaUrl('')).toBe('');
+      expect(component.getPortadaUrl(null as any)).toBe('');
+    });
 
-  describe('confirmarEliminar', () => {
-    it('should open modal with the recurso to delete', () => {
-      const recurso = mockRecursos[0];
+    it('should return unchanged URL when portada starts with http', () => {
+      const url = 'https://ejemplo.com/imagen.jpg';
+      expect(component.getPortadaUrl(url)).toBe(url);
+    });
 
-      component.confirmarEliminar(recurso);
-
-      expect(component.mostrarModal()).toBe(true);
-      expect(component.recursoAEliminar()).toEqual(recurso);
+    it('should add base64 prefix when portada is base64 string', () => {
+      const base64 = 'abc123def456';
+      expect(component.getPortadaUrl(base64)).toBe('data:image/jpeg;base64,' + base64);
     });
   });
 
-  describe('cerrarModal', () => {
-    it('should close modal and clear recursoAEliminar', () => {
-      component.mostrarModal.set(true);
-      component.recursoAEliminar.set(mockRecursos[0]);
-
-      expect(component.mostrarModal()).toBe(true);
-      expect(component.recursoAEliminar()).toEqual(mockRecursos[0]);
-
-      component.cerrarModal();
-
-      expect(component.mostrarModal()).toBe(false);
-      expect(component.recursoAEliminar()).toBeNull();
-    });
-  });
-
-  describe('eliminar', () => {
-    beforeEach(() => {
-      component.recursoAEliminar.set(mockRecursos[0]);
-      expect(component.recursoAEliminar()).toEqual(mockRecursos[0]);
-    });
-
-    it('should delete recurso successfully', fakeAsync(() => {
-      mockRecursoService.delete.and.returnValue(of(null));
+  describe('ngOnInit', () => {
+    it('should call cargarRecursos on init', () => {
       spyOn(component, 'cargarRecursos');
-
-      component.eliminar();
-      tick();
-
-      expect(mockRecursoService.delete).toHaveBeenCalledWith('1');
+      component.ngOnInit();
       expect(component.cargarRecursos).toHaveBeenCalled();
-      expect(component.mostrarModal()).toBe(false);
-      expect(component.recursoAEliminar()).toBeNull();
-    }));
-
-    it('should handle error when deleting recurso', fakeAsync(() => {
-      mockRecursoService.delete.and.returnValue(throwError(() => new Error('Error')));
-      spyOn(component, 'cargarRecursos');
-
-      component.eliminar();
-      tick();
-
-      expect(mockRecursoService.delete).toHaveBeenCalledWith('1');
-      expect(component.error()).toBe('Error al eliminar el recurso');
-      expect(component.mostrarModal()).toBe(false);
-      expect(component.recursoAEliminar()).toBeNull();
-    }));
+    });
   });
 
-  it('should set empty message when no recursos', () => {
-    component.recursos.set([]);
-    component.loading.set(false);
-    component.error.set('');
+  describe('Empty state', () => {
+    it('should set empty message when no recursos', () => {
+      component.recursos.set([]);
+      component.loading.set(false);
+      component.error.set('');
 
-    expect(component.recursos().length).toBe(0);
+      expect(component.recursos().length).toBe(0);
+    });
   });
 
 });

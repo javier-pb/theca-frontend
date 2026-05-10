@@ -7,6 +7,7 @@ import { ListaRecursosComponent } from './features/recursos/lista-recursos/lista
 import { FormularioRecursoComponent } from './features/recursos/formulario-recurso/formulario-recurso';
 import { PerfilComponent } from './features/usuario/perfil/perfil';
 import { CambiarContrasenaComponent } from './features/usuario/cambiar-contrasena/cambiar-contrasena';
+import { DetalleRecursoComponent } from './features/recursos/detalle-recurso/detalle-recurso';
 
 // Rutas de la aplicación:
 export const routes: Routes = [
@@ -21,6 +22,7 @@ export const routes: Routes = [
       { path: 'recursos', component: ListaRecursosComponent },
       { path: 'recursos/nuevo', component: FormularioRecursoComponent },
       { path: 'recursos/editar/:id', component: FormularioRecursoComponent },
+      { path: 'recursos/detalle/:id', component: DetalleRecursoComponent },
       { path: '', redirectTo: '/recursos', pathMatch: 'full' }
     ]
   },

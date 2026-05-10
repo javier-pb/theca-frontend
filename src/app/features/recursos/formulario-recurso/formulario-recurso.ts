@@ -53,25 +53,42 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const savedState = this.formState();
-    this.titulo.set(savedState.titulo);
-    this.autoresTexto.set(savedState.autoresTexto);
-    this.autoresIds.set([]);
-    this.portada.set(savedState.portada);
-    this.tipoId.set(savedState.tipoId || '');
-    this.version.set(savedState.version);
-    this.descripcion.set(savedState.descripcion);
-    this.enlace.set(savedState.enlace);
-    this.categoriasTexto.set([...savedState.categoriasTexto]);
-    this.categoriasIds.set([]);
-    this.etiquetasTexto.set([...savedState.etiquetasTexto]);
-    this.etiquetasIds.set([]);
-
     const id = this.route.snapshot.paramMap.get('id');
+
     if (id) {
       this.recursoId.set(id);
       this.esEdicion.set(true);
+
+      const savedState = this.formState();
+      this.titulo.set(savedState.titulo);
+      this.autoresTexto.set(savedState.autoresTexto);
+      this.portada.set(savedState.portada);
+      this.tipoId.set(savedState.tipoId || '');
+      this.version.set(savedState.version);
+      this.descripcion.set(savedState.descripcion);
+      this.enlace.set(savedState.enlace);
+      this.categoriasTexto.set([...savedState.categoriasTexto]);
+      this.etiquetasTexto.set([...savedState.etiquetasTexto]);
+      this.autoresIds.set([]);
+      this.categoriasIds.set([]);
+      this.etiquetasIds.set([]);
+
       this.cargarRecurso();
+    } else {
+      this.stateService.clearState();
+
+      this.titulo.set('');
+      this.autoresTexto.set('');
+      this.autoresIds.set([]);
+      this.portada.set(null);
+      this.tipoId.set('');
+      this.version.set('');
+      this.descripcion.set('');
+      this.enlace.set('');
+      this.categoriasTexto.set([]);
+      this.categoriasIds.set([]);
+      this.etiquetasTexto.set([]);
+      this.etiquetasIds.set([]);
     }
   }
 
