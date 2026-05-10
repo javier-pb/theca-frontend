@@ -1,165 +1,269 @@
+/* Contenedor principal: */
 .lista-container {
-  padding: 1rem;
+  padding: 1.5rem 2rem;
+  background-color: transparent;
 }
 
-.header-actions {
+/* Wrapper para centrar la barra superior: */
+.top-bar-wrapper {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
 }
 
-.btn-crear {
-  background: #667eea;
-  color: white;
-  padding: 0.5rem 1rem;
+/* Barra superior centrada: */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 900px;
+}
+
+/* Botón de añadir: */
+.btn-anadir {
+  background: none;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
+.icon-anadir {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.btn-anadir:hover .icon-anadir {
+  transform: scale(1.05);
+}
+
+/* Contenedor de búsqueda: */
+.search-container {
+  flex: 1;
+}
+
+/* Barra de búsqueda: */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: #DEEAED;
+  border-radius: 2px;
+  padding: 0.2rem 0.5rem;
+}
+
+.btn-lupa {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-lupa {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.7rem 0.5rem;
+  font-size: 0.95rem;
+  color: #2c3e50;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: #6b7d85;
+}
+
+/* Botón de búsqueda avanzada: */
+.btn-busqueda-avanzada {
+  background-color: #5980a6;
+  color: white;
+  border: none;
+  border-radius: 2px;
+  padding: 0.7rem 1.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-busqueda-avanzada:hover {
+  background-color: #4A6875;
+}
+
+/* Título: */
+.page-title {
+  text-align: center;
+  color: #5980a6;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+/* Grid de recursos: */
 .recursos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem;
+  padding: 0.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
+/* Tarjeta de recurso: */
 .recurso-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1rem;
   background: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.card-header {
+  border-radius: 2px;
+  padding: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 0.5rem;
+  justify-content: center;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 220px;
+  justify-self: center;
 }
 
-.card-header h3 {
-  margin: 0;
-  color: #333;
+.recurso-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.card-actions {
+/* Portada: */
+.card-imagen {
+  width: 100%;
+  height: 60%;
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.3rem;
 }
 
-.btn-editar, .btn-eliminar {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.2rem;
+.portada-img {
+  max-width: 70%;
+  max-height: 70%;
+  object-fit: contain;
 }
 
-.btn-editar:hover { opacity: 0.7; }
-.btn-eliminar:hover { opacity: 0.7; }
-
-.descripcion {
-  color: #666;
-  font-size: 0.9rem;
-  margin: 0.5rem 0;
+.portada-placeholder {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: #ccc;
 }
 
-.tipo {
-  color: #888;
-  font-size: 0.8rem;
-  margin: 0.25rem 0;
-}
-
-.enlace {
-  display: inline-block;
-  color: #667eea;
-  text-decoration: none;
-  font-size: 0.8rem;
-  margin: 0.25rem 0;
-}
-
-.enlace:hover {
-  text-decoration: underline;
-}
-
-.card-footer {
-  margin-top: 0.75rem;
-  text-align: right;
-}
-
-.btn-detalle {
-  background: none;
-  border: none;
-  color: #667eea;
-  cursor: pointer;
+/* Título del recurso: */
+.card-titulo {
   font-size: 0.85rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.1rem;
+  line-height: 1.2;
 }
 
-.btn-detalle:hover {
-  text-decoration: underline;
+/* Autor: */
+.card-autor {
+  font-size: 0.7rem;
+  color: #5C7D8A;
 }
 
+/* Estados de carga y error: */
 .loading, .error, .empty {
   text-align: center;
   padding: 2rem;
-  color: #666;
+  color: #2c3e50;
 }
 
 .error {
-  color: red;
+  color: #c0392b;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+/* Responsive */
+@media (max-width: 1024px) {
+  .recursos-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
 }
 
-.modal {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  max-width: 400px;
-  width: 90%;
+@media (max-width: 768px) {
+  .lista-container {
+    padding: 1rem;
+  }
+
+  .top-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .search-container {
+    flex: 1 1 100%;
+    order: 2;
+  }
+
+  .btn-anadir {
+    order: 1;
+  }
+
+  .btn-busqueda-avanzada {
+    order: 3;
+    width: 100%;
+  }
+
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .recursos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+
+  .card-imagen {
+    height: 55%;
+  }
+
+  .portada-img {
+    max-width: 60%;
+    max-height: 60%;
+  }
+
+  .card-titulo {
+    font-size: 0.8rem;
+  }
+
+  .card-autor {
+    font-size: 0.65rem;
+  }
 }
 
-.modal h3 {
-  margin-top: 0;
-}
-
-.advertencia {
-  color: red;
-  font-size: 0.85rem;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.btn-cancelar {
-  background: #ccc;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-confirmar {
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
+@media (max-width: 480px) {
+  .recursos-grid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
 }
