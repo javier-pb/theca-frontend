@@ -1,0 +1,116 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal content: */
+.modal-content {
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 2px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Título: */
+.modal-title {
+  text-align: center;
+  color: #5C7D8A;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  margin-top: 0;
+}
+
+/* Formulario: */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  display: block;
+  color: #5C7D8A;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: none;
+  background-color: #DEEAED;
+  border-radius: 2px;
+  font-size: 0.95rem;
+  color: #2c3e50;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-group input::placeholder {
+  color: #6b7d85;
+}
+
+.form-group input:focus {
+  outline: none;
+  background-color: #e8f1f5;
+  box-shadow: 0 0 0 2px #5C7D8A;
+}
+
+/* Mensaje de error: */
+.error-message {
+  color: #c0392b;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+/* Botones del modal: */
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.btn-guardar {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #5C7D8A;
+  color: white;
+  border: none;
+  border-radius: 2px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-guardar:hover:not(:disabled) {
+  background-color: #4A6875;
+}
+
+.btn-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive: */
+@media (max-width: 480px) {
+  .modal-content {
+    padding: 1rem 1.25rem;
+  }
+
+  .modal-title {
+    font-size: 1.3rem;
+  }
+}

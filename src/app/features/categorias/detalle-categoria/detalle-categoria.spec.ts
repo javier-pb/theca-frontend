@@ -204,7 +204,7 @@ describe('DetalleCategoriaComponent', () => {
     it('should render title', () => {
       const title = fixture.debugElement.nativeElement.querySelector('.page-title');
       expect(title).toBeTruthy();
-      expect(title.textContent).toContain('DETALLE DE CATEGORÍA');
+      expect(title.textContent).toContain('DETALLE DE LA CATEGORÍA');
     });
 
     it('should display categoria nombre', () => {
