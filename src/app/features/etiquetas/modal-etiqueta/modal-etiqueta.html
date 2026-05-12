@@ -1,0 +1,30 @@
+<div class="modal-overlay" (click)="cancelar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Título: -->
+    <h2 class="modal-title">{{ modo === 'crear' ? 'AÑADIR ETIQUETA' : 'EDITAR ETIQUETA' }}</h2>
+
+    <div class="form-group">
+      <label class="form-label">*Nombre de la etiqueta:</label>
+      <input
+        type="text"
+        [(ngModel)]="nombre"
+        placeholder="Nombre de la etiqueta"
+        (keyup.enter)="onSubmit()"
+        autofocus>
+    </div>
+
+    @if (error()) {
+      <div class="error-message">{{ error() }}</div>
+    }
+
+    <div class="modal-buttons">
+      <button type="button" class="btn-guardar" (click)="onSubmit()" [disabled]="loading()">
+        @if (loading()) {
+          Guardando...
+        } @else {
+          {{ modo === 'crear' ? 'Añadir etiqueta' : 'Actualizar etiqueta' }}
+        }
+      </button>
+    </div>
+  </div>
+</div>
