@@ -1,34 +1,24 @@
 <div class="lista-container">
-  <!-- Barra superior centrada -->
+  <!-- Barra superior: -->
   <div class="top-bar-wrapper">
     <div class="top-bar">
-      <!-- Botón de añadir -->
+      <!-- Botón de añadir: -->
       <button class="btn-anadir" routerLink="/recursos/nuevo">
         <img src="assets/images/Anadir.png" alt="Añadir" class="icon-anadir">
       </button>
 
-      <!-- Barra de búsqueda -->
-      <div class="search-container">
-        <div class="search-bar">
-          <button class="btn-lupa">
-            <img src="assets/images/Lupa.png" alt="Buscar" class="icon-lupa">
-          </button>
-          <input
-            type="text"
-            placeholder="¿Qué quieres buscar?"
-            class="search-input">
-        </div>
-      </div>
-
-      <!-- Botón de búsqueda avanzada -->
-      <button class="btn-busqueda-avanzada">Búsqueda avanzada</button>
+      <!-- Componente de búsqueda: -->
+      <app-busqueda
+        (buscar)="onBuscar($event)"
+        (busquedaAvanzada)="abrirBusquedaAvanzada()">
+      </app-busqueda>
     </div>
   </div>
 
-  <!-- Título -->
+  <!-- Título: -->
   <h1 class="page-title">RECURSOS</h1>
 
-  <!-- Contenido -->
+  <!-- Contenido: -->
   @if (loading()) {
     <div class="loading">Cargando recursos...</div>
   }
@@ -38,18 +28,18 @@
   }
 
   @if (!loading() && !error()) {
-    @if (recursos().length === 0) {
-      <div class="empty">
-        No tienes recursos. ¡Crea tu primer recurso!
-      </div>
+    @if (recursosFiltrados().length === 0 && terminoBusqueda() === '') {
+      <div class="empty">No tienes recursos. ¡Crea tu primer recurso!</div>
     }
 
-    @if (recursos().length > 0) {
+    @if (recursosFiltrados().length === 0 && terminoBusqueda() !== '') {
+      <div class="empty">No se encontraron recursos que coincidan con "{{ terminoBusqueda() }}"</div>
+    }
+
+    @if (recursosFiltrados().length > 0) {
       <div class="recursos-grid">
-        @for (recurso of recursos(); track recurso.id) {
-          <!-- Toda la tarjeta es clickeable para ir al detalle -->
+        @for (recurso of recursosFiltrados(); track recurso.id) {
           <div class="recurso-card" [routerLink]="['/recursos/detalle', recurso.id]">
-            <!-- Portada -->
             <div class="card-imagen">
               @if (recurso.portada) {
                 <img [src]="getPortadaUrl(recurso.portada)" alt="Portada" class="portada-img">
@@ -59,11 +49,7 @@
                 </div>
               }
             </div>
-
-            <!-- Título -->
             <div class="card-titulo">{{ recurso.titulo }}</div>
-
-            <!-- Autor (solo si existe) -->
             @if (recurso.autor && recurso.autor.trim() !== '') {
               <div class="card-autor">{{ recurso.autor }}</div>
             }

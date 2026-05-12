@@ -1,0 +1,17 @@
+<div class="search-bar">
+  <button class="btn-lupa" (click)="onBuscar()">
+    <img src="assets/images/Lupa.png" alt="Buscar" class="icon-lupa">
+  </button>
+  <input
+    type="text"
+    [(ngModel)]="terminoBusqueda"
+    (keyup.enter)="onBuscar()"
+    placeholder="¿Qué quieres buscar?"
+    class="search-input">
+  @if (terminoBusqueda()) {
+    <button class="btn-limpiar" (click)="limpiar()">✕</button>
+  }
+</div>
+<button class="btn-busqueda-avanzada" (click)="onBusquedaAvanzada()">
+  Búsqueda avanzada
+</button>

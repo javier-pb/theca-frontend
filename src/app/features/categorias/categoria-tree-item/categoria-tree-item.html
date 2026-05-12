@@ -1,0 +1,28 @@
+<div class="tree-item" [class.has-children]="hasChildren()">
+  <div class="tree-item-content" (click)="toggleExpand()">
+    <!-- Flecha de expansión: -->
+    <div class="expand-icon" [class.expanded]="expanded()" [class.visible]="hasChildren()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5C7D8A" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </div>
+
+    <!-- Nombre de la categoría: -->
+    <span class="category-name" [class.root-category]="!categoria.categoriaPadreId" (click)="irADetalle(categoria.id!)">
+      {{ categoria.nombre }}
+    </span>
+  </div>
+
+  <!-- Subcategorías: -->
+  @if (expanded() && hasChildren()) {
+    <div class="subcategorias">
+      @for (subcategoria of subcategorias(); track subcategoria.id) {
+        <app-categoria-tree-item
+          [categoria]="subcategoria"
+          [categorias]="categorias"
+          (abrirDetalle)="abrirDetalle.emit($event)">
+        </app-categoria-tree-item>
+      }
+    </div>
+  }
+</div>

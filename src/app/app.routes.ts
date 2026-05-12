@@ -8,6 +8,9 @@ import { FormularioRecursoComponent } from './features/recursos/formulario-recur
 import { PerfilComponent } from './features/usuario/perfil/perfil';
 import { CambiarContrasenaComponent } from './features/usuario/cambiar-contrasena/cambiar-contrasena';
 import { DetalleRecursoComponent } from './features/recursos/detalle-recurso/detalle-recurso';
+import { ListaCategoriasComponent } from './features/categorias/lista-categorias/lista-categorias';
+import { FormularioCategoriaComponent } from './features/categorias/formulario-categoria/formulario-categoria';
+import { DetalleCategoriaComponent } from './features/categorias/detalle-categoria/detalle-categoria';
 
 // Rutas de la aplicación:
 export const routes: Routes = [
@@ -19,10 +22,17 @@ export const routes: Routes = [
     children: [
       { path: 'perfil', component: PerfilComponent },
       { path: 'cambiar-contrasena', component: CambiarContrasenaComponent },
+
       { path: 'recursos', component: ListaRecursosComponent },
       { path: 'recursos/nuevo', component: FormularioRecursoComponent },
       { path: 'recursos/editar/:id', component: FormularioRecursoComponent },
       { path: 'recursos/detalle/:id', component: DetalleRecursoComponent },
+
+      { path: 'categorias', component: ListaCategoriasComponent },
+      { path: 'categorias/nuevo', component: FormularioCategoriaComponent },
+      { path: 'categorias/editar/:id', component: FormularioCategoriaComponent },
+      { path: 'categorias/detalle/:id', component: DetalleCategoriaComponent },
+
       { path: '', redirectTo: '/recursos', pathMatch: 'full' }
     ]
   },
