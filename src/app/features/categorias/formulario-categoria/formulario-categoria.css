@@ -1,0 +1,130 @@
+.form-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  min-height: 80vh;
+}
+
+.form-content {
+  max-width: 500px;
+  width: 100%;
+}
+
+.page-title {
+  text-align: center;
+  color: #5980a6;
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 2.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  color: #5980a6;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: none;
+  background-color: #DEEAED;
+  border-radius: 2px;
+  font-size: 0.95rem;
+  color: #2c3e50;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  background-color: #e8f1f5;
+  box-shadow: 0 0 0 2px #5C7D8A;
+}
+
+.form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235C7D8A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.2rem;
+}
+
+/* Checkbox: */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #5C7D8A;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #5C7D8A;
+  cursor: pointer;
+}
+
+/* Mensajes: */
+.loading {
+  text-align: center;
+  padding: 1rem;
+  background-color: rgba(92, 125, 138, 0.1);
+  color: #5C7D8A;
+  border-radius: 2px;
+  margin: 1rem 0;
+}
+
+.error {
+  text-align: center;
+  padding: 0.75rem;
+  background-color: rgba(192, 57, 43, 0.1);
+  color: #c0392b;
+  border-radius: 2px;
+  margin: 1rem 0;
+}
+
+/* Botón de acción: */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.btn-guardar {
+  padding: 0.8rem 3rem;
+  background-color: #5980a6;
+  color: white;
+  border: none;
+  border-radius: 2px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-width: 200px;
+}
+
+.btn-guardar:hover:not(:disabled) {
+  background-color: #4A6875;
+}
+
+.btn-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

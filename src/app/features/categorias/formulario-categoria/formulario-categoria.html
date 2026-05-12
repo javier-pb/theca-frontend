@@ -1,0 +1,61 @@
+<div class="form-container">
+  <div class="form-content">
+    <h1 class="page-title">{{ esEdicion() ? 'EDITAR CATEGORÍA' : 'AÑADIR CATEGORÍA' }}</h1>
+
+    <form (ngSubmit)="onSubmit()">
+      <!-- Nombre de la categoría: -->
+      <div class="form-group">
+        <label>*Nombre de la categoría:</label>
+        <input
+          type="text"
+          [ngModel]="nombre()"
+          (ngModelChange)="nombre.set($event)"
+          name="nombre"
+          placeholder="Categoría"
+          required>
+      </div>
+
+      <!-- Checkbox: -->
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            [ngModel]="esSubcategoria()"
+            (ngModelChange)="esSubcategoria.set($event)"
+            name="esSubcategoria">
+          ¿Es subcategoría?
+        </label>
+      </div>
+
+      <!-- Selector de categoría padre: -->
+      @if (esSubcategoria()) {
+        <div class="form-group">
+          <label>Seleccione la categoría de la que depende:</label>
+          <select
+            [ngModel]="categoriaPadreId()"
+            (ngModelChange)="categoriaPadreId.set($event)"
+            name="categoriaPadreId">
+            <option value="">Seleccione una categoría</option>
+            @for (categoria of categoriasDisponibles(); track categoria.id) {
+              <option [value]="categoria.id">{{ categoria.nombre }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      @if (loading()) {
+        <div class="loading">Guardando...</div>
+      }
+
+      @if (error()) {
+        <div class="error">{{ error() }}</div>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="btn-guardar" [disabled]="loading()">
+          {{ esEdicion() ? 'Actualizar categoría' : 'Añadir categoría' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

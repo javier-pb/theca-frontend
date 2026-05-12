@@ -1,0 +1,90 @@
+<div class="detalle-container">
+  @if (loading()) {
+    <div class="loading">Cargando...</div>
+  }
+
+  @if (error()) {
+    <div class="error">{{ error() }}</div>
+  }
+
+  @if (categoria() && !loading() && !error()) {
+    <h1 class="page-title">DETALLE DE CATEGORÍA</h1>
+
+    <div class="detalle-content">
+      <div class="info-section">
+        <!-- Nombre de la categoría: -->
+        <div class="info-group">
+          <span class="info-label">Categoría:</span>
+          <span class="info-value">{{ categoria()?.nombre || '' }}</span>
+        </div>
+
+        <!-- Subcategorías: -->
+        <div class="info-group">
+          <span class="info-label">Subcategorías:</span>
+          <span class="info-value">
+            @if (subcategorias().length === 0) {
+              No tiene subcategorías
+            } @else {
+              <ul class="subcategorias-lista">
+                @for (sub of subcategorias(); track sub.id) {
+                  <li (click)="irADetalle(sub.id!)" class="subcategoria-item">
+                    {{ sub.nombre }}
+                  </li>
+                }
+              </ul>
+            }
+          </span>
+        </div>
+
+        <!-- Número de recursos asociados: -->
+        <div class="info-group">
+          <span class="info-label">Número de recursos asociados:</span>
+          <span class="info-value">0</span>
+        </div>
+
+        <!-- Recursos asociados: -->
+        <div class="info-group">
+          <span class="info-label">Recursos asociados:</span>
+          <span class="info-value">
+            @if (recursosAsociados().length === 0) {
+              No hay recursos asociados a esta categoría
+            } @else {
+              <ul class="recursos-lista">
+                @for (recurso of recursosAsociados(); track recurso.id) {
+                  <li class="recurso-item" [routerLink]="['/recursos/detalle', recurso.id]">
+                    {{ recurso.titulo }}
+                  </li>
+                }
+              </ul>
+            }
+          </span>
+        </div>
+
+        <!-- Botones de acción: -->
+        <div class="acciones">
+          <button class="btn-editar" [routerLink]="['/categorias/editar', categoria()?.id]">
+            Editar categoría
+          </button>
+          <button class="btn-eliminar" (click)="confirmarEliminar()">
+            Eliminar categoría
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de confirmación para eliminar: -->
+  @if (mostrarModal()) {
+    <div class="modal-overlay" (click)="cerrarModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <h3>Confirmar eliminación</h3>
+        <p>¿Está seguro de que quiere eliminar la categoría "{{ categoria()?.nombre }}" (y todas sus subcategorías)?</p>
+        <p class="advertencia">Esta acción no se puede deshacer.</p>
+        <div class="modal-buttons">
+          <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button class="btn-confirmar" (click)="eliminar()">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
