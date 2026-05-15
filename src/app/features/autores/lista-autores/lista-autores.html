@@ -1,0 +1,49 @@
+<div class="lista-container">
+  <div class="top-bar-wrapper">
+    <div class="top-bar">
+      <button class="btn-anadir" routerLink="/autores/nuevo">
+        <img src="assets/images/Anadir.png" alt="Añadir" class="icon-anadir">
+      </button>
+
+      <app-busqueda
+        (buscar)="onBuscar($event)"
+        (busquedaAvanzada)="abrirBusquedaAvanzada()">
+      </app-busqueda>
+    </div>
+  </div>
+
+  <h1 class="page-title">AUTORES</h1>
+
+  @if (loading()) {
+    <div class="loading">Cargando autores...</div>
+  }
+
+  @if (error()) {
+    <div class="error">{{ error() }}</div>
+  }
+
+  @if (!loading() && !error()) {
+    @if (autoresFiltrados().length === 0 && terminoBusqueda() === '') {
+      <div class="empty">No hay autores. ¡Cree su primer autor!</div>
+    }
+
+    @if (autoresFiltrados().length === 0 && terminoBusqueda() !== '') {
+      <div class="empty">No se encontraron autores que coincidan con "{{ terminoBusqueda() }}"</div>
+    }
+
+    @if (autoresFiltrados().length > 0) {
+      @for (grupo of grupos(); track grupo.letra) {
+        <div class="grupo-letra">
+          <h2 class="letra-titulo">{{ grupo.letra }}</h2>
+          <div class="autores-grid">
+            @for (autor of grupo.autores; track autor.id) {
+              <div class="autor-card" (click)="irADetalle(autor.id!)">
+                <span class="autor-nombre">{{ autor.nombre }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  }
+</div>

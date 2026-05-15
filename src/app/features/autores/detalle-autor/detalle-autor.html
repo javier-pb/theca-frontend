@@ -1,0 +1,72 @@
+<div class="detalle-container">
+  @if (loading()) {
+    <div class="loading">Cargando...</div>
+  }
+
+  @if (error()) {
+    <div class="error">{{ error() }}</div>
+  }
+
+  @if (autor() && !loading() && !error()) {
+    <h1 class="page-title">DETALLE DEL AUTOR</h1>
+
+    <div class="detalle-content">
+      <div class="info-section">
+        <!-- Nombre del autor: -->
+        <div class="info-group">
+          <span class="info-label">Autor:</span>
+          <span class="info-value">{{ autor()?.nombre || '' }}</span>
+        </div>
+
+        <!-- Número de recursos asociados: -->
+        <div class="info-group">
+          <span class="info-label">N.º de recursos asociados:</span>
+          <span class="info-value">{{ recursos().length }}</span>
+        </div>
+
+        <!-- Recursos asociados: -->
+        <div class="info-group description">
+          <span class="info-label">Recursos asociados:</span>
+          <div class="info-value description-text">
+            @if (recursos().length === 0) {
+              No hay recursos asociados a este autor
+            } @else {
+              <ul class="recursos-lista">
+                @for (recurso of recursos(); track recurso.id) {
+                  <li class="recurso-link" [routerLink]="['/recursos/detalle', recurso.id]">
+                    {{ recurso.titulo }}
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+
+        <!-- Botones de acción: -->
+        <div class="acciones">
+          <button class="btn-editar" [routerLink]="['/autores/editar', autor()?.id]">
+            Editar autor
+          </button>
+          <button class="btn-eliminar" (click)="confirmarEliminar()">
+            Eliminar autor
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de confirmación para eliminar: -->
+  @if (mostrarModal()) {
+    <div class="modal-overlay" (click)="cerrarModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <h3>Confirmar eliminación</h3>
+        <p>¿Está seguro de que quiere eliminar el autor "{{ autor()?.nombre }}"?</p>
+        <p class="advertencia">Esta acción no se puede deshacer.</p>
+        <div class="modal-buttons">
+          <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button class="btn-confirmar" (click)="eliminar()">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
