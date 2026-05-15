@@ -1,0 +1,86 @@
+<div class="detalle-container">
+  @if (loading()) {
+    <div class="loading">Cargando...</div>
+  }
+
+  @if (error()) {
+    <div class="error">{{ error() }}</div>
+  }
+
+  @if (tipo() && !loading() && !error()) {
+    <h1 class="page-title">DETALLE DEL TIPO</h1>
+
+    <div class="detalle-content">
+      <div class="info-section">
+        <!-- Imagen del tipo: -->
+        <div class="info-group imagen-group">
+          <span class="info-label">Imagen:</span>
+          <div class="info-value">
+            <div class="imagen-container">
+              @if (getImagenUrl(tipo())) {
+                <img [src]="getImagenUrl(tipo())" [alt]="tipo()?.nombre" class="tipo-imagen">
+              } @else {
+                <img src="assets/images/Tipo.png" alt="Tipo por defecto" class="tipo-imagen">
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Nombre del tipo: -->
+        <div class="info-group">
+          <span class="info-label">Tipo:</span>
+          <span class="info-value">{{ tipo()?.nombre || '' }}</span>
+        </div>
+
+        <!-- Número de recursos asociados: -->
+        <div class="info-group">
+          <span class="info-label">N.º de recursos asociados:</span>
+          <span class="info-value">{{ recursos().length }}</span>
+        </div>
+
+        <!-- Recursos asociados: -->
+        <div class="info-group description">
+          <span class="info-label">Recursos asociados:</span>
+          <div class="info-value description-text">
+            @if (recursos().length === 0) {
+              No hay recursos asociados a este tipo
+            } @else {
+              <ul class="recursos-lista">
+                @for (recurso of recursos(); track recurso.id) {
+                  <li class="recurso-link" [routerLink]="['/recursos/detalle', recurso.id]">
+                    {{ recurso.titulo }}
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+
+        <!-- Botones de acción: -->
+        <div class="acciones">
+          <button class="btn-editar" [routerLink]="['/tipos/editar', tipo()?.id]">
+            Editar tipo
+          </button>
+          <button class="btn-eliminar" (click)="confirmarEliminar()">
+            Eliminar tipo
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de confirmación para eliminar: -->
+  @if (mostrarModal()) {
+    <div class="modal-overlay" (click)="cerrarModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <h3>Confirmar eliminación</h3>
+        <p>¿Está seguro de que quiere eliminar el tipo "{{ tipo()?.nombre }}"?</p>
+        <p class="advertencia">Esta acción no se puede deshacer.</p>
+        <div class="modal-buttons">
+          <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button class="btn-confirmar" (click)="eliminar()">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

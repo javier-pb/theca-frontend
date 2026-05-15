@@ -1,0 +1,51 @@
+<div class="lista-container">
+  <div class="top-bar-wrapper">
+    <div class="top-bar">
+      <button class="btn-anadir" routerLink="/tipos/nuevo">
+        <img src="assets/images/Anadir.png" alt="Añadir" class="icon-anadir">
+      </button>
+
+      <app-busqueda
+        (buscar)="onBuscar($event)"
+        (busquedaAvanzada)="abrirBusquedaAvanzada()">
+      </app-busqueda>
+    </div>
+  </div>
+
+  <h1 class="page-title">TIPOS</h1>
+
+  @if (loading()) {
+    <div class="loading">Cargando tipos...</div>
+  }
+
+  @if (error()) {
+    <div class="error">{{ error() }}</div>
+  }
+
+  @if (!loading() && !error()) {
+    @if (tiposFiltrados().length === 0 && terminoBusqueda() === '') {
+      <div class="empty">No hay tipos. ¡Cree su primer tipo!</div>
+    }
+
+    @if (tiposFiltrados().length === 0 && terminoBusqueda() !== '') {
+      <div class="empty">No se encontraron tipos que coincidan con "{{ terminoBusqueda() }}"</div>
+    }
+
+    @if (tiposFiltrados().length > 0) {
+      <div class="tipos-grid">
+        @for (tipo of tiposFiltrados(); track tipo.id) {
+          <div class="tipo-card" (click)="irADetalle(tipo.id!)">
+            <div class="card-imagen">
+              @if (getImagenUrl(tipo)) {
+                <img [src]="getImagenUrl(tipo)" [alt]="tipo.nombre" class="tipo-img">
+              } @else {
+                <img src="assets/images/Tipo (azul).png" alt="Tipo por defecto" class="tipo-img">
+              }
+            </div>
+            <div class="card-nombre">{{ tipo.nombre }}</div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
