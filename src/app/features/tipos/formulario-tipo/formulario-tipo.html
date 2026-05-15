@@ -1,0 +1,70 @@
+<div class="form-container">
+  <div class="form-content">
+    <h1 class="page-title">{{ esEdicion() ? 'EDITAR TIPO' : 'AÑADIR TIPO' }}</h1>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-row-top">
+        <!-- Columna de la imagen: -->
+        <div class="imagen-column">
+          <div class="imagen-wrapper">
+            <div class="imagen-layout">
+              <div class="imagen-container">
+                @if (imagen() && imagen() !== '') {
+                  <div class="imagen-preview">
+                    <img [src]="imagen()" alt="Vista previa">
+                    <button type="button" class="btn-remove-imagen" (click)="eliminarImagen()">✕</button>
+                  </div>
+                } @else {
+                  <div class="imagen-placeholder">
+                    <img src="assets/images/Tipo.png" alt="Tipo por defecto" class="imagen-default">
+                  </div>
+                }
+              </div>
+
+              <!-- Botón de editar imagen: -->
+              <button type="button" class="btn-edit-imagen" (click)="abrirSelectorArchivo()">
+                <img src="assets/images/Editar.png" alt="Editar" class="icon-edit">
+              </button>
+            </div>
+
+            <input
+              type="file"
+              (change)="onFileSelected($event)"
+              accept="image/*"
+              id="imagenInput"
+              style="display: none">
+          </div>
+        </div>
+
+        <!-- Columna del nombre: -->
+        <div class="datos-column">
+          <div class="form-group">
+            <label>*Nombre del tipo:</label>
+            <input
+              type="text"
+              [ngModel]="nombre()"
+              (ngModelChange)="nombre.set($event)"
+              name="nombre"
+              placeholder="Tipo"
+              required>
+          </div>
+        </div>
+      </div>
+
+      @if (loading()) {
+        <div class="loading">Guardando...</div>
+      }
+
+      @if (error()) {
+        <div class="error">{{ error() }}</div>
+      }
+
+      <!-- Botón de acción: -->
+      <div class="form-actions">
+        <button type="submit" class="btn-guardar" [disabled]="loading()">
+          {{ esEdicion() ? 'Actualizar tipo' : 'Añadir tipo' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

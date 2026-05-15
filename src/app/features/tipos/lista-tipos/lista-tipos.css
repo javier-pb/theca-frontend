@@ -1,0 +1,175 @@
+.lista-container {
+  padding: 1.5rem 2rem;
+  background-color: transparent;
+  min-height: 80vh;
+}
+
+.top-bar-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 900px;
+}
+
+.btn-anadir {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-anadir {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.btn-anadir:hover .icon-anadir {
+  transform: scale(1.05);
+}
+
+.page-title {
+  text-align: center;
+  color: #5980a6;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+/* Grid de tipos - MISMO ESTILO QUE RECURSOS */
+.tipos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem;
+  padding: 0.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Tarjeta de tipo - MISMO ESTILO QUE RECURSOS */
+.tipo-card {
+  background: white;
+  border-radius: 2px;
+  padding: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 220px;
+  justify-self: center;
+}
+
+.tipo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-imagen {
+  width: 100%;
+  height: 60%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.3rem;
+}
+
+.tipo-img {
+  max-width: 70%;
+  max-height: 70%;
+  object-fit: contain;
+}
+
+.card-nombre {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.1rem;
+  line-height: 1.2;
+}
+
+.loading, .error, .empty {
+  text-align: center;
+  padding: 2rem;
+  color: #2c3e50;
+}
+
+.error {
+  color: #c0392b;
+}
+
+/* Responsive - MISMO ESTILO QUE RECURSOS */
+@media (max-width: 1024px) {
+  .tipos-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .lista-container {
+    padding: 1rem;
+  }
+
+  .top-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn-anadir {
+    order: 1;
+  }
+
+  app-busqueda {
+    order: 2;
+    width: 100%;
+  }
+
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .tipos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+
+  .card-imagen {
+    height: 55%;
+  }
+
+  .tipo-img {
+    max-width: 60%;
+    max-height: 60%;
+  }
+
+  .card-nombre {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tipos-grid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+}

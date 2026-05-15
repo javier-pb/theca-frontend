@@ -16,6 +16,9 @@ import { DetalleEtiquetaComponent } from './features/etiquetas/detalle-etiqueta/
 import { ListaAutoresComponent } from './features/autores/lista-autores/lista-autores';
 import { DetalleAutorComponent } from './features/autores/detalle-autor/detalle-autor';
 import { FormularioAutorComponent } from './features/autores/formulario-autor/formulario-autor';
+import { ListaTiposComponent } from './features/tipos/lista-tipos/lista-tipos';
+import { FormularioTipoComponent } from './features/tipos/formulario-tipo/formulario-tipo';
+import { DetalleTipoComponent } from './features/tipos/detalle-tipo/detalle-tipo';
 
 // Rutas de la aplicación:
 export const routes: Routes = [
@@ -45,6 +48,11 @@ export const routes: Routes = [
       { path: 'autores/nuevo', component: FormularioAutorComponent },
       { path: 'autores/editar/:id', component: FormularioAutorComponent },
       { path: 'autores/detalle/:id', component: DetalleAutorComponent },
+
+      { path: 'tipos', component: ListaTiposComponent },
+      { path: 'tipos/nuevo', component: FormularioTipoComponent },
+      { path: 'tipos/editar/:id', component: FormularioTipoComponent },
+      { path: 'tipos/detalle/:id', component: DetalleTipoComponent },
 
       { path: '', redirectTo: '/recursos', pathMatch: 'full' }
     ]
