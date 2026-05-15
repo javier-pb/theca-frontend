@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { RecursoService } from '../../../core/services/recurso';
 import { AuthService } from '../../../core/services/auth';
+import { AutorService } from '../../../core/services/autor';
 import { BusquedaComponent } from '../../../shared/busqueda/busqueda';
 
 @Component({
@@ -20,11 +21,10 @@ export class ListaRecursosComponent implements OnInit {
   terminoBusqueda = signal('');
   loading = signal(true);
   error = signal('');
-  mostrarModal = signal(false);
-  recursoAEliminar = signal<any>(null);
 
   constructor(
     private recursoService: RecursoService,
+    private autorService: AutorService,
     private authService: AuthService
   ) {}
 
@@ -39,12 +39,46 @@ export class ListaRecursosComponent implements OnInit {
     const userId = this.authService.getUserId();
 
     this.recursoService.getAll(userId ?? undefined).subscribe({
-      next: (data) => {
-        this.recursos.set(data);
+      next: async (data) => {
+        if (!data || !Array.isArray(data)) {
+          this.recursos.set([]);
+          this.filtrarRecursos();
+          this.loading.set(false);
+          return;
+        }
+
+        const recursosConAutores = await Promise.all(data.map(async (recurso) => {
+          let autoresList: string[] = [];
+
+          if (recurso.autores && Array.isArray(recurso.autores) && recurso.autores.length > 0) {
+            const autorIds = recurso.autores.map((a: any) => a.id || a._id);
+
+            for (const id of autorIds) {
+              if (id) {
+                try {
+                  const autor = await this.autorService.getById(id).toPromise();
+                  if (autor && autor.nombre) {
+                    autoresList.push(autor.nombre);
+                  }
+                } catch (e) {
+                  console.error(`Error cargando autor ${id}:`, e);
+                }
+              }
+            }
+          }
+
+          return {
+            ...recurso,
+            autoresList: autoresList
+          };
+        }));
+
+        this.recursos.set(recursosConAutores);
         this.filtrarRecursos();
         this.loading.set(false);
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error al cargar recursos:', err);
         this.error.set('Error al cargar los recursos');
         this.loading.set(false);
       }
@@ -63,15 +97,13 @@ export class ListaRecursosComponent implements OnInit {
       this.recursosFiltrados.set(this.recursos());
     } else {
       const filtrados = this.recursos().filter(recurso =>
-        recurso.titulo.toLowerCase().includes(termino) ||
-        (recurso.autor && recurso.autor.toLowerCase().includes(termino))
+        recurso.titulo.toLowerCase().includes(termino)
       );
       this.recursosFiltrados.set(filtrados);
     }
   }
 
   abrirBusquedaAvanzada(): void {
-    // TODO: Implementar búsqueda avanzada
     console.log('Búsqueda avanzada - Pendiente');
   }
 

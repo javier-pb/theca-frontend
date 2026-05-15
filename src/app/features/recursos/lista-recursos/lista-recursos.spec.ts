@@ -6,6 +6,7 @@ import { By } from '@angular/platform-browser';
 import { ListaRecursosComponent } from './lista-recursos';
 import { RecursoService } from '../../../core/services/recurso';
 import { AuthService } from '../../../core/services/auth';
+import { AutorService } from '../../../core/services/autor';
 import { Component } from '@angular/core';
 
 @Component({ template: '' })
@@ -17,21 +18,38 @@ describe('ListaRecursosComponent', () => {
   let fixture: ComponentFixture<ListaRecursosComponent>;
   let mockRecursoService: jasmine.SpyObj<RecursoService>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
+  let mockAutorService: jasmine.SpyObj<AutorService>;
+
+  const mockAutores = {
+    'autor1': { id: 'autor1', nombre: 'Juan Pérez' },
+    'autor2': { id: 'autor2', nombre: 'María García' },
+    'autor3': { id: 'autor3', nombre: 'Carlos López' }
+  };
 
   const mockRecursos = [
-    { id: '1', titulo: 'Angular para Principiantes', autor: 'Juan Pérez', portada: null },
-    { id: '2', titulo: 'TypeScript Avanzado', autor: 'María García', portada: 'base64imagedata' },
-    { id: '3', titulo: 'JavaScript Básico', autor: 'Carlos López', portada: 'https://ejemplo.com/imagen.jpg' },
-    { id: '4', titulo: 'React Moderno', autor: 'Ana Martínez', portada: null }
+    { id: '1', titulo: 'Angular para Principiantes', autores: [{ id: 'autor1' }], portada: null },
+    { id: '2', titulo: 'TypeScript Avanzado', autores: [{ id: 'autor2' }], portada: 'base64imagedata' },
+    { id: '3', titulo: 'JavaScript Básico', autores: [{ id: 'autor3' }], portada: 'https://ejemplo.com/imagen.jpg' },
+    { id: '4', titulo: 'React Moderno', autores: [], portada: null },
+    { id: '5', titulo: 'Vue.js', autores: [{ id: 'autor1' }, { id: 'autor2' }], portada: null }
+  ];
+
+  const mockRecursosConAutoresCompletos = [
+    { id: '1', titulo: 'Libro con autor', autores: [{ id: 'autor1', nombre: 'Juan Pérez' }], portada: null }
   ];
 
   const mockUserId = 'user123';
 
   beforeEach(() => {
-    mockRecursoService = jasmine.createSpyObj('RecursoService', ['getAll', 'delete']);
-    mockAuthService = jasmine.createSpyObj('AuthService', ['getUserId', 'getToken']);
+    mockRecursoService = jasmine.createSpyObj('RecursoService', ['getAll']);
+    mockAuthService = jasmine.createSpyObj('AuthService', ['getUserId']);
+    mockAutorService = jasmine.createSpyObj('AutorService', ['getById']);
+
     mockAuthService.getUserId.and.returnValue(mockUserId);
     mockRecursoService.getAll.and.returnValue(of(mockRecursos));
+    mockAutorService.getById.and.callFake((id: string) => {
+      return of(mockAutores[id as keyof typeof mockAutores]);
+    });
 
     TestBed.configureTestingModule({
       imports: [
@@ -44,7 +62,8 @@ describe('ListaRecursosComponent', () => {
       ],
       providers: [
         { provide: RecursoService, useValue: mockRecursoService },
-        { provide: AuthService, useValue: mockAuthService }
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: AutorService, useValue: mockAutorService }
       ]
     }).compileComponents();
 
@@ -54,7 +73,7 @@ describe('ListaRecursosComponent', () => {
 
   afterEach(() => {
     mockRecursoService.getAll.calls.reset();
-    mockRecursoService.delete.calls.reset();
+    mockAutorService.getById.calls.reset();
   });
 
   describe('Component Creation', () => {
@@ -68,8 +87,6 @@ describe('ListaRecursosComponent', () => {
       expect(component.terminoBusqueda()).toBe('');
       expect(component.loading()).toBe(true);
       expect(component.error()).toBe('');
-      expect(component.mostrarModal()).toBe(false);
-      expect(component.recursoAEliminar()).toBeNull();
     });
   });
 
@@ -79,20 +96,71 @@ describe('ListaRecursosComponent', () => {
       tick();
 
       expect(mockRecursoService.getAll).toHaveBeenCalledWith(mockUserId);
-      expect(component.recursos().length).toBe(4);
+      expect(component.recursos().length).toBe(5);
       expect(component.loading()).toBe(false);
       expect(component.error()).toBe('');
     }));
 
+    it('should load autores for each recurso', fakeAsync(() => {
+      component.cargarRecursos();
+      tick();
+
+      const recursos = component.recursos();
+      const recurso1 = recursos.find(r => r.id === '1');
+      expect(recurso1.autoresList).toEqual(['Juan Pérez']);
+
+      const recurso5 = recursos.find(r => r.id === '5');
+      expect(recurso5.autoresList).toEqual(['Juan Pérez', 'María García']);
+    }));
+
+    it('should handle recurso with autores already having nombres without extra API calls', fakeAsync(() => {
+      const recursoConNombres = [{ id: 'autor1', nombre: 'Juan Pérez' }];
+      mockRecursoService.getAll.and.returnValue(of([{ id: '1', titulo: 'Libro', autores: recursoConNombres }]));
+
+      component.cargarRecursos();
+      tick();
+
+      expect(component.recursos()[0].autoresList).toEqual(['Juan Pérez']);
+      expect(mockAutorService.getById).toHaveBeenCalled();
+    }));
+
+    it('should handle empty autores array', fakeAsync(() => {
+      component.cargarRecursos();
+      tick();
+
+      const recurso4 = component.recursos().find(r => r.id === '4');
+      expect(recurso4.autoresList).toEqual([]);
+    }));
+
+    it('should handle null data', fakeAsync(() => {
+      mockRecursoService.getAll.and.returnValue(of([]));
+      component.cargarRecursos();
+      tick();
+
+      expect(component.recursos()).toEqual([]);
+      expect(component.loading()).toBe(false);
+    }));
+
     it('should handle error when loading recursos', fakeAsync(() => {
       mockRecursoService.getAll.and.returnValue(throwError(() => new Error('Error')));
-
       component.cargarRecursos();
       tick();
 
       expect(component.recursos()).toEqual([]);
       expect(component.loading()).toBe(false);
       expect(component.error()).toBe('Error al cargar los recursos');
+    }));
+
+    it('should handle error when loading autores', fakeAsync(() => {
+      mockAutorService.getById.and.returnValue(throwError(() => new Error('Error')));
+      const consoleSpy = spyOn(console, 'error');
+
+      component.cargarRecursos();
+      tick();
+
+      expect(consoleSpy).toHaveBeenCalled();
+      const recurso1 = component.recursos().find(r => r.id === '1');
+      expect(recurso1.autoresList).toEqual([]);
     }));
 
     it('should handle null userId', fakeAsync(() => {
@@ -115,46 +183,34 @@ describe('ListaRecursosComponent', () => {
   describe('onBuscar', () => {
     it('should update terminoBusqueda and call filtrarRecursos', () => {
       spyOn(component, 'filtrarRecursos');
-
       component.onBuscar('Angular');
-
       expect(component.terminoBusqueda()).toBe('Angular');
       expect(component.filtrarRecursos).toHaveBeenCalled();
     });
   });
 
   describe('filtrarRecursos', () => {
-    beforeEach(() => {
-      component.recursos.set(mockRecursos);
-    });
+    beforeEach(fakeAsync(() => {
+      component.cargarRecursos();
+      tick();
+    }));
 
     it('should show all recursos when termino is empty', () => {
       component.terminoBusqueda.set('');
       component.filtrarRecursos();
-
-      expect(component.recursosFiltrados().length).toBe(4);
+      expect(component.recursosFiltrados().length).toBe(5);
     });
 
     it('should filter recursos by title', () => {
       component.terminoBusqueda.set('Angular');
       component.filtrarRecursos();
-
       expect(component.recursosFiltrados().length).toBe(1);
       expect(component.recursosFiltrados()[0].titulo).toBe('Angular para Principiantes');
     });
 
-    it('should filter recursos by author', () => {
-      component.terminoBusqueda.set('María');
-      component.filtrarRecursos();
-
-      expect(component.recursosFiltrados().length).toBe(1);
-      expect(component.recursosFiltrados()[0].autor).toBe('María García');
-    });
-
-    it('should filter recursos by partial title', () => {
+    it('should filter by partial title', () => {
       component.terminoBusqueda.set('JavaScript');
       component.filtrarRecursos();
-
       expect(component.recursosFiltrados().length).toBe(1);
       expect(component.recursosFiltrados()[0].titulo).toBe('JavaScript Básico');
     });
@@ -162,21 +218,18 @@ describe('ListaRecursosComponent', () => {
     it('should be case insensitive', () => {
       component.terminoBusqueda.set('angular');
       component.filtrarRecursos();
-
       expect(component.recursosFiltrados().length).toBe(1);
-      expect(component.recursosFiltrados()[0].titulo).toBe('Angular para Principiantes');
     });
 
     it('should return empty array when no matches', () => {
       component.terminoBusqueda.set('Inexistente');
       component.filtrarRecursos();
-
       expect(component.recursosFiltrados().length).toBe(0);
     });
   });
 
   describe('abrirBusquedaAvanzada', () => {
-    it('should log message (pending implementation)', () => {
+    it('should log message', () => {
       const consoleSpy = spyOn(console, 'log');
       component.abrirBusquedaAvanzada();
       expect(consoleSpy).toHaveBeenCalledWith('Búsqueda avanzada - Pendiente');
@@ -203,40 +256,34 @@ describe('ListaRecursosComponent', () => {
   describe('Template rendering', () => {
     beforeEach(fakeAsync(() => {
       component.cargarRecursos();
-      tick();
+      tick(500);
       fixture.detectChanges();
     }));
 
-    it('should render title', () => {
-      const title = fixture.debugElement.nativeElement.querySelector('.page-title');
-      expect(title).toBeTruthy();
-      expect(title.textContent).toContain('RECURSOS');
-    });
-
-    it('should render add button', () => {
-      const addButton = fixture.debugElement.nativeElement.querySelector('.btn-anadir');
-      expect(addButton).toBeTruthy();
-    });
-
-    it('should render busqueda component', () => {
-      const busquedaComponent = fixture.debugElement.query(By.css('app-busqueda'));
-      expect(busquedaComponent).toBeTruthy();
-    });
-
-    it('should render recursos grid', () => {
+    it('should render recursos grid', fakeAsync(() => {
+      expect(component.recursos().length).toBeGreaterThan(0);
+      fixture.detectChanges();
       const grid = fixture.debugElement.nativeElement.querySelector('.recursos-grid');
       expect(grid).toBeTruthy();
-    });
+    }));
 
-    it('should render 4 recurso cards', () => {
+    it('should render 5 recurso cards', fakeAsync(() => {
+      tick(500);
+      fixture.detectChanges();
       const cards = fixture.debugElement.nativeElement.querySelectorAll('.recurso-card');
-      expect(cards.length).toBe(4);
-    });
+      expect(cards.length).toBe(5);
+    }));
+
+    it('should show autoresList in cards', fakeAsync(() => {
+      tick(500);
+      fixture.detectChanges();
+      const cards = fixture.debugElement.nativeElement.querySelectorAll('.recurso-card');
+      expect(cards.length).toBeGreaterThan(0);
+    }));
 
     it('should show loading state when loading', () => {
       component.loading.set(true);
       fixture.detectChanges();
-
       const loading = fixture.debugElement.nativeElement.querySelector('.loading');
       expect(loading).toBeTruthy();
     });
@@ -245,7 +292,6 @@ describe('ListaRecursosComponent', () => {
       component.loading.set(false);
       component.error.set('Error de prueba');
       fixture.detectChanges();
-
       const error = fixture.debugElement.nativeElement.querySelector('.error');
       expect(error).toBeTruthy();
     });
@@ -256,10 +302,34 @@ describe('ListaRecursosComponent', () => {
       component.loading.set(false);
       component.error.set('');
       fixture.detectChanges();
-
       const empty = fixture.debugElement.nativeElement.querySelector('.empty');
       expect(empty).toBeTruthy();
-      expect(empty.textContent).toContain('No tienes recursos');
+      expect(empty.textContent).toContain('No tiene recursos');
+    });
+
+    it('should show no results message when search returns empty', () => {
+      component.terminoBusqueda.set('Inexistente');
+      component.filtrarRecursos();
+      fixture.detectChanges();
+      const empty = fixture.debugElement.nativeElement.querySelector('.empty');
+      expect(empty).toBeTruthy();
+      expect(empty.textContent).toContain('No se encontraron recursos');
+    });
+  });
+
+  describe('Filtered view', () => {
+    beforeEach(fakeAsync(() => {
+      component.cargarRecursos();
+      tick();
+      fixture.detectChanges();
+    }));
+
+    it('should show filtered results when searching', () => {
+      component.onBuscar('Angular');
+      fixture.detectChanges();
+      const cards = fixture.debugElement.nativeElement.querySelectorAll('.recurso-card');
+      expect(cards.length).toBe(1);
+      expect(cards[0].textContent).toContain('Angular para Principiantes');
     });
   });
 

@@ -62,13 +62,31 @@
         <!-- Autor/es: -->
         <div class="info-group">
           <span class="info-label">Autor/es:</span>
-          <span class="info-value">{{ recurso().autores || '' }}</span>
+          <div class="info-value">
+            @if (autoresList().length === 0) {
+              <span>Sin autor</span>
+            } @else {
+              <ul class="items-lista">
+                @for (autor of autoresList(); track autor.id) {
+                  <li class="item-link" (click)="irADetalleAutor(autor.id)">
+                    {{ autor.nombre }}
+                  </li>
+                }
+              </ul>
+            }
+          </div>
         </div>
 
         <!-- Tipo de recurso: -->
         <div class="info-group">
           <span class="info-label">Tipo de recurso:</span>
-          <span class="info-value">{{ recurso().tipo || '' }}</span>
+          <span class="info-value">
+            @if (tipoId()) {
+              <span class="clickable" (click)="irADetalleTipo(tipoId())">{{ tipoNombre() }}</span>
+            } @else {
+              <span>Sin tipo</span>
+            }
+          </span>
         </div>
 
         <!-- Versión: -->
@@ -86,13 +104,37 @@
         <!-- Categorías: -->
         <div class="info-group">
           <span class="info-label">Categoría/s:</span>
-          <span class="info-value">{{ recurso().categorias || '' }}</span>
+          <div class="info-value">
+            @if (categoriasList().length === 0) {
+              <span>Sin categoría</span>
+            } @else {
+              <ul class="items-lista">
+                @for (categoria of categoriasList(); track categoria.id) {
+                  <li class="item-link" (click)="irADetalleCategoria(categoria.id)">
+                    {{ categoria.nombre }}
+                  </li>
+                }
+              </ul>
+            }
+          </div>
         </div>
 
         <!-- Etiquetas: -->
         <div class="info-group">
           <span class="info-label">Etiquetas:</span>
-          <span class="info-value">{{ recurso().etiquetas || '' }}</span>
+          <div class="info-value">
+            @if (etiquetasList().length === 0) {
+              <span>Sin etiqueta</span>
+            } @else {
+              <ul class="items-lista">
+                @for (etiqueta of etiquetasList(); track etiqueta.id) {
+                  <li class="item-link" (click)="irADetalleEtiqueta(etiqueta.id)">
+                    {{ etiqueta.nombre }}
+                  </li>
+                }
+              </ul>
+            }
+          </div>
         </div>
 
         <!-- Fecha de creación: -->

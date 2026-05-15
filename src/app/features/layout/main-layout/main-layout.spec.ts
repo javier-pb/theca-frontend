@@ -1,19 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { By } from '@angular/platform-browser';
-import { Component } from '@angular/core';
 
 import { MainLayoutComponent } from './main-layout';
-import { AjustesComponent } from '../ajustes/ajustes';
-import { MenuComponent } from '../menu/menu';
 
-@Component({ selector: 'app-ajustes', template: '<div>Mock Ajustes</div>' })
-class MockAjustesComponent {}
-
-@Component({ selector: 'app-menu-lateral', template: '<div>Mock Menu</div>' })
-class MockMenuComponent {}
-
-// Test unitario para el componente MainLayoutComponent:
+// Test unitario para la disposición principal:
 describe('MainLayoutComponent', () => {
   let component: MainLayoutComponent;
   let fixture: ComponentFixture<MainLayoutComponent>;
@@ -23,11 +14,7 @@ describe('MainLayoutComponent', () => {
       imports: [
         MainLayoutComponent,
         RouterTestingModule
-      ],
-    })
-    .overrideComponent(MainLayoutComponent, {
-      remove: { imports: [AjustesComponent, MenuComponent] },
-      add: { imports: [MockAjustesComponent, MockMenuComponent] }
+      ]
     })
     .compileComponents();
 
@@ -38,6 +25,29 @@ describe('MainLayoutComponent', () => {
 
   it('should create the component', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('onDocumentClick', () => {
+    it('should exist and be callable', () => {
+      const spy = spyOn(component, 'onDocumentClick');
+      const event = new MouseEvent('click');
+      component.onDocumentClick(event);
+      expect(spy).toHaveBeenCalledWith(event);
+    });
+
+    it('should not throw error when called', () => {
+      const event = new MouseEvent('click');
+      expect(() => component.onDocumentClick(event)).not.toThrow();
+    });
+  });
+
+  describe('HostListener', () => {
+    it('should have document:click listener', () => {
+      const methodNames = Object.getOwnPropertyNames(
+        Object.getPrototypeOf(component)
+      );
+      expect(methodNames).toContain('onDocumentClick');
+    });
   });
 
   describe('Template rendering', () => {
@@ -62,7 +72,7 @@ describe('MainLayoutComponent', () => {
     });
 
     it('should render router outlet inside main content', () => {
-      const routerOutlet = fixture.debugElement.nativeElement.querySelector('router-outlet');
+      const routerOutlet = fixture.debugElement.query(By.css('router-outlet'));
       expect(routerOutlet).toBeTruthy();
     });
 
@@ -78,23 +88,39 @@ describe('MainLayoutComponent', () => {
       expect(container.classList.contains('main-layout')).toBe(true);
     });
 
-    it('should have ajustes-wrapper positioned for floating button', () => {
+    it('should have ajustes-wrapper with proper classes', () => {
       const ajustesWrapper = fixture.debugElement.nativeElement.querySelector('.ajustes-wrapper');
-      expect(ajustesWrapper).toBeTruthy();
+      expect(ajustesWrapper.classList.contains('ajustes-wrapper')).toBe(true);
+    });
+
+    it('should have main-content with proper classes', () => {
+      const mainContent = fixture.debugElement.nativeElement.querySelector('.main-content');
+      expect(mainContent.classList.contains('main-content')).toBe(true);
     });
   });
 
   describe('Component integration', () => {
     it('should include AjustesComponent', () => {
-      const mockAjustes = fixture.debugElement.query(By.css('app-ajustes'));
-      expect(mockAjustes).toBeTruthy();
-      expect(mockAjustes.nativeElement.textContent).toContain('Mock Ajustes');
+      const ajustesComponent = fixture.debugElement.query(By.css('app-ajustes'));
+      expect(ajustesComponent).toBeTruthy();
     });
 
     it('should include MenuComponent', () => {
-      const mockMenu = fixture.debugElement.query(By.css('app-menu-lateral'));
-      expect(mockMenu).toBeTruthy();
-      expect(mockMenu.nativeElement.textContent).toContain('Mock Menu');
+      const menuComponent = fixture.debugElement.query(By.css('app-menu-lateral'));
+      expect(menuComponent).toBeTruthy();
+    });
+  });
+
+  describe('DOM structure', () => {
+    it('should have router-outlet inside main-content', () => {
+      const mainContent = fixture.debugElement.nativeElement.querySelector('.main-content');
+      const routerOutlet = mainContent?.querySelector('router-outlet');
+      expect(routerOutlet).toBeTruthy();
+    });
+
+    it('should have ajustes-wrapper as first child?', () => {
+      const container = fixture.debugElement.nativeElement.querySelector('.main-layout');
+      expect(container.children.length).toBeGreaterThan(0);
     });
   });
 

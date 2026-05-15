@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AjustesComponent } from '../ajustes/ajustes';
 import { MenuComponent } from '../menu/menu';
@@ -11,4 +11,9 @@ import { MenuComponent } from '../menu/menu';
   styleUrls: ['./main-layout.css']
 })
 // Componente para el layout principal:
-export class MainLayoutComponent {}
+export class MainLayoutComponent {
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {}
+
+}

@@ -29,7 +29,7 @@
 
   @if (!loading() && !error()) {
     @if (recursosFiltrados().length === 0 && terminoBusqueda() === '') {
-      <div class="empty">No tienes recursos. ¡Cree su primer recurso!</div>
+      <div class="empty">No tiene recursos. ¡Cree su primer recurso!</div>
     }
 
     @if (recursosFiltrados().length === 0 && terminoBusqueda() !== '') {
@@ -44,15 +44,15 @@
               @if (recurso.portada) {
                 <img [src]="getPortadaUrl(recurso.portada)" alt="Portada" class="portada-img">
               } @else {
-                <div class="portada-placeholder">
-                  <span>📄</span>
-                </div>
+                <img src="assets/images/Recurso (azul).png" alt="Recurso" class="portada-img">
               }
             </div>
             <div class="card-titulo">{{ recurso.titulo }}</div>
-            @if (recurso.autor && recurso.autor.trim() !== '') {
-              <div class="card-autor">{{ recurso.autor }}</div>
-            }
+            <div class="card-autores">
+              @for (autor of recurso.autoresList; track autor) {
+                <div class="card-autor">{{ autor }}</div>
+              }
+            </div>
           </div>
         }
       </div>

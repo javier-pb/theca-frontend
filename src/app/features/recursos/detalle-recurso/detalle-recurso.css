@@ -195,7 +195,7 @@
   color: #c0392b;
 }
 
-/* Modal de eliminación */
+/* Modal de eliminación: */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -249,6 +249,37 @@
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
+}
+
+/* Estilos para elementos clicables: */
+.clickable {
+  color: #2c3e50;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.clickable:hover {
+  color: #4A6875;
+  text-decoration: underline;
+}
+
+/* Lista de items: */
+.items-lista {
+  margin: 0;
+  padding-left: 1.2rem;
+  list-style: disc;
+}
+
+.item-link {
+  cursor: pointer;
+  color: #2c3e50;
+  margin: 0.25rem 0;
+  transition: color 0.2s;
+}
+
+.item-link:hover {
+  color: #4A6875;
+  text-decoration: underline;
 }
 
 /* Responsive: */
