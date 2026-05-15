@@ -1,0 +1,82 @@
+<div class="form-container">
+  <div class="form-content">
+    <h1 class="page-title">{{ esEdicion() ? 'EDITAR AUTOR' : 'AÑADIR AUTOR' }}</h1>
+
+    <form (ngSubmit)="onSubmit()">
+      <!-- Nombre del autor: -->
+      <div class="form-group">
+        <label>*Nombre del autor:</label>
+        <input
+          type="text"
+          [ngModel]="nombre()"
+          (ngModelChange)="nombre.set($event)"
+          name="nombre"
+          placeholder="Autor"
+          required>
+      </div>
+
+      <!-- Selector de recursos con búsqueda: -->
+      <div class="form-group">
+        <label>Asociar obra/s:</label>
+
+        <!-- Barra de búsqueda con botón: -->
+        <div class="search-recursos">
+          <input
+            type="text"
+            [ngModel]="terminoBusquedaRecursos()"
+            (ngModelChange)="terminoBusquedaRecursos.set($event)"
+            (keyup.enter)="onEnterBusqueda($event)"
+            placeholder="Buscar por título"
+            name="terminoBusqueda"
+            class="search-input">
+          <button type="button" class="btn-buscar" (click)="buscarRecursos()" [disabled]="buscando()">
+            @if (buscando()) {
+              Buscando...
+            } @else {
+              Buscar
+            }
+          </button>
+        </div>
+
+        <!-- Lista de recursos: -->
+        <div class="recursos-lista">
+          @for (recurso of recursosDisponibles(); track recurso.id) {
+            <label class="recurso-item">
+              <input
+                type="checkbox"
+                [checked]="recursosSeleccionados().includes(recurso.id)"
+                (change)="toggleRecurso(recurso.id)">
+              {{ recurso.titulo }}
+            </label>
+          }
+          @if (recursosDisponibles().length === 0 && !buscando()) {
+            <div class="no-resultados">
+              @if (terminoBusquedaRecursos()) {
+                No se encontraron recursos para "{{ terminoBusquedaRecursos() }}"
+              } @else {
+                No hay recursos disponibles
+              }
+            </div>
+          }
+          @if (buscando()) {
+            <div class="no-resultados">Buscando recursos...</div>
+          }
+        </div>
+      </div>
+
+      @if (loading()) {
+        <div class="loading">Guardando...</div>
+      }
+
+      @if (error()) {
+        <div class="error">{{ error() }}</div>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="btn-guardar" [disabled]="loading()">
+          {{ esEdicion() ? 'Actualizar autor' : 'Añadir autor' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

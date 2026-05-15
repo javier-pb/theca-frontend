@@ -13,6 +13,9 @@ import { FormularioCategoriaComponent } from './features/categorias/formulario-c
 import { DetalleCategoriaComponent } from './features/categorias/detalle-categoria/detalle-categoria';
 import { ListaEtiquetasComponent } from './features/etiquetas/lista-etiquetas/lista-etiquetas';
 import { DetalleEtiquetaComponent } from './features/etiquetas/detalle-etiqueta/detalle-etiqueta';
+import { ListaAutoresComponent } from './features/autores/lista-autores/lista-autores';
+import { DetalleAutorComponent } from './features/autores/detalle-autor/detalle-autor';
+import { FormularioAutorComponent } from './features/autores/formulario-autor/formulario-autor';
 
 // Rutas de la aplicación:
 export const routes: Routes = [
@@ -37,6 +40,11 @@ export const routes: Routes = [
 
       { path: 'etiquetas', component: ListaEtiquetasComponent },
       { path: 'etiquetas/detalle/:id', component: DetalleEtiquetaComponent },
+
+      { path: 'autores', component: ListaAutoresComponent },
+      { path: 'autores/nuevo', component: FormularioAutorComponent },
+      { path: 'autores/editar/:id', component: FormularioAutorComponent },
+      { path: 'autores/detalle/:id', component: DetalleAutorComponent },
 
       { path: '', redirectTo: '/recursos', pathMatch: 'full' }
     ]
