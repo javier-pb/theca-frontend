@@ -33,7 +33,7 @@
             } @else {
               <ul class="recursos-lista">
                 @for (recurso of recursos(); track recurso.id) {
-                  <li [routerLink]="['/recursos/detalle', recurso.id]" class="recurso-link">
+                  <li class="recurso-link" (click)="irADetalleRecurso(recurso.id)">
                     {{ recurso.titulo }}
                   </li>
                 }

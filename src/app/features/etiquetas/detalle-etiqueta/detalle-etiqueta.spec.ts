@@ -6,16 +6,19 @@ import { By } from '@angular/platform-browser';
 
 import { DetalleEtiquetaComponent } from './detalle-etiqueta';
 import { EtiquetaService, Etiqueta } from '../../../core/services/etiqueta';
+import { RecursoService } from '../../../core/services/recurso';
 import { Component } from '@angular/core';
 
 @Component({ template: '' })
 class DummyComponent {}
 
-// Tes unitario para el detalle de una etiqueta:
+// Test unitario para el detalle de una etiqueta:
 describe('DetalleEtiquetaComponent', () => {
+
   let component: DetalleEtiquetaComponent;
   let fixture: ComponentFixture<DetalleEtiquetaComponent>;
   let etiquetaService: jasmine.SpyObj<EtiquetaService>;
+  let recursoService: jasmine.SpyObj<RecursoService>;
   let router: Router;
 
   const mockEtiqueta: Etiqueta = {
@@ -27,14 +30,16 @@ describe('DetalleEtiquetaComponent', () => {
   };
 
   const mockRecursos = [
-    { id: '1', titulo: 'Recurso Angular 1' },
-    { id: '2', titulo: 'Recurso Angular 2' }
+    { id: '1', titulo: 'Recurso Angular 1', etiquetas: [{ id: '1' }] },
+    { id: '2', titulo: 'Recurso Angular 2', etiquetas: [{ id: '1' }] },
+    { id: '3', titulo: 'Recurso sin etiqueta', etiquetas: [] }
   ];
 
   beforeEach(async () => {
     etiquetaService = jasmine.createSpyObj('EtiquetaService', [
-      'getById', 'getRecursosAsociados', 'delete'
+      'getById', 'delete'
     ]);
+    recursoService = jasmine.createSpyObj('RecursoService', ['getAll']);
 
     const mockActivatedRoute = {
       params: of({ id: '1' })
@@ -44,11 +49,14 @@ describe('DetalleEtiquetaComponent', () => {
       imports: [
         DetalleEtiquetaComponent,
         RouterTestingModule.withRoutes([
-          { path: 'etiquetas', component: DummyComponent }
+          { path: 'etiquetas', component: DummyComponent },
+          { path: 'recursos/detalle/1', component: DummyComponent },
+          { path: 'recursos/detalle/2', component: DummyComponent }
         ])
       ],
       providers: [
         { provide: EtiquetaService, useValue: etiquetaService },
+        { provide: RecursoService, useValue: recursoService },
         { provide: ActivatedRoute, useValue: mockActivatedRoute }
       ]
     }).compileComponents();
@@ -61,8 +69,8 @@ describe('DetalleEtiquetaComponent', () => {
 
   afterEach(() => {
     etiquetaService.getById.calls.reset();
-    etiquetaService.getRecursosAsociados.calls.reset();
     etiquetaService.delete.calls.reset();
+    recursoService.getAll.calls.reset();
   });
 
   describe('Component Creation', () => {
@@ -83,7 +91,7 @@ describe('DetalleEtiquetaComponent', () => {
   describe('cargarEtiqueta', () => {
     it('should load etiqueta successfully', fakeAsync(() => {
       etiquetaService.getById.and.returnValue(of(mockEtiqueta));
-      etiquetaService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
 
       component.cargarEtiqueta('1');
       tick();
@@ -107,21 +115,46 @@ describe('DetalleEtiquetaComponent', () => {
     }));
   });
 
-  describe('cargarRecursos', () => {
-    it('should load recursos successfully', () => {
-      etiquetaService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+  describe('cargarRecursosAsociados', () => {
+    it('should load recursos asociados successfully', () => {
+      recursoService.getAll.and.returnValue(of(mockRecursos));
 
-      component.cargarRecursos('1');
+      component.cargarRecursosAsociados('1');
 
-      expect(etiquetaService.getRecursosAsociados).toHaveBeenCalledWith('1');
+      expect(recursoService.getAll).toHaveBeenCalled();
       expect(component.recursos().length).toBe(2);
+      expect(component.recursos()[0].titulo).toBe('Recurso Angular 1');
+      expect(component.recursos()[1].titulo).toBe('Recurso Angular 2');
+    });
+
+    it('should handle resources with etiquetas as objects with _id', () => {
+      const recursosConId = [
+        { id: '1', titulo: 'Recurso 1', etiquetas: [{ _id: '1' }] },
+        { id: '2', titulo: 'Recurso 2', etiquetas: [{ _id: '2' }] }
+      ];
+      recursoService.getAll.and.returnValue(of(recursosConId));
+
+      component.cargarRecursosAsociados('1');
+
+      expect(component.recursos().length).toBe(1);
+      expect(component.recursos()[0].titulo).toBe('Recurso 1');
+    });
+
+    it('should handle empty recursos list', () => {
+      recursoService.getAll.and.returnValue(of([]));
+
+      component.cargarRecursosAsociados('1');
+
+      expect(component.recursos().length).toBe(0);
     });
 
     it('should handle error when loading recursos', () => {
-      etiquetaService.getRecursosAsociados.and.returnValue(throwError(() => new Error('Error')));
+      recursoService.getAll.and.returnValue(throwError(() => new Error('Error')));
+      const consoleSpy = spyOn(console, 'error');
 
-      component.cargarRecursos('1');
+      component.cargarRecursosAsociados('1');
 
+      expect(consoleSpy).toHaveBeenCalled();
       expect(component.recursos()).toEqual([]);
     });
   });
@@ -158,7 +191,7 @@ describe('DetalleEtiquetaComponent', () => {
   describe('Eliminar etiqueta', () => {
     beforeEach(() => {
       etiquetaService.getById.and.returnValue(of(mockEtiqueta));
-      etiquetaService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       component.cargarEtiqueta('1');
     });
 
@@ -196,12 +229,26 @@ describe('DetalleEtiquetaComponent', () => {
       expect(component.loading()).toBe(false);
       expect(component.mostrarModal()).toBe(false);
     }));
+
+    it('should not delete when id is undefined', () => {
+      component.etiqueta.set({ ...mockEtiqueta, id: undefined });
+      component.eliminar();
+      expect(etiquetaService.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('irADetalleRecurso', () => {
+    it('should navigate to recurso detalle', () => {
+      spyOn(router, 'navigate');
+      component.irADetalleRecurso('1');
+      expect(router.navigate).toHaveBeenCalledWith(['/recursos/detalle', '1']);
+    });
   });
 
   describe('Template rendering', () => {
     beforeEach(fakeAsync(() => {
       etiquetaService.getById.and.returnValue(of(mockEtiqueta));
-      etiquetaService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       component.cargarEtiqueta('1');
       tick();
       fixture.detectChanges();
@@ -228,6 +275,13 @@ describe('DetalleEtiquetaComponent', () => {
       expect(recursos.length).toBe(2);
       expect(recursos[0].textContent).toContain('Recurso Angular 1');
       expect(recursos[1].textContent).toContain('Recurso Angular 2');
+    });
+
+    it('should make recursos clickable', () => {
+      const recursoLink = fixture.debugElement.nativeElement.querySelector('.recurso-link');
+      spyOn(component, 'irADetalleRecurso');
+      recursoLink.click();
+      expect(component.irADetalleRecurso).toHaveBeenCalled();
     });
 
     it('should render editar button', () => {
@@ -257,12 +311,20 @@ describe('DetalleEtiquetaComponent', () => {
       expect(error).toBeTruthy();
       expect(error.textContent).toContain('Error de prueba');
     });
+
+    it('should show empty state when no recursos', () => {
+      component.recursos.set([]);
+      fixture.detectChanges();
+
+      const recursosText = fixture.debugElement.nativeElement.querySelector('.info-group.description .info-value');
+      expect(recursosText.textContent).toContain('No hay recursos asociados a esta etiqueta');
+    });
   });
 
   describe('Modal template', () => {
     beforeEach(fakeAsync(() => {
       etiquetaService.getById.and.returnValue(of(mockEtiqueta));
-      etiquetaService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       component.cargarEtiqueta('1');
       tick();
       fixture.detectChanges();
@@ -304,6 +366,32 @@ describe('DetalleEtiquetaComponent', () => {
       confirmBtn.triggerEventHandler('click', null);
 
       expect(component.eliminar).toHaveBeenCalled();
+    });
+  });
+
+  describe('Edit modal', () => {
+    beforeEach(fakeAsync(() => {
+      etiquetaService.getById.and.returnValue(of(mockEtiqueta));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
+      component.cargarEtiqueta('1');
+      tick();
+      fixture.detectChanges();
+    }));
+
+    it('should show edit modal when showModal is true', () => {
+      component.showModal.set(true);
+      fixture.detectChanges();
+
+      const modal = fixture.debugElement.query(By.css('app-modal-etiqueta'));
+      expect(modal).toBeTruthy();
+    });
+
+    it('should not show edit modal when showModal is false', () => {
+      component.showModal.set(false);
+      fixture.detectChanges();
+
+      const modal = fixture.debugElement.query(By.css('app-modal-etiqueta'));
+      expect(modal).toBeFalsy();
     });
   });
 
