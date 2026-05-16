@@ -2,7 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { CategoriaService } from '../../../core/services/categoria';
+import { CategoriaService, Categoria } from '../../../core/services/categoria';
 
 @Component({
   selector: 'app-formulario-categoria',
@@ -23,12 +23,21 @@ export class FormularioCategoriaComponent implements OnInit {
   nombre = signal('');
   esSubcategoria = signal(false);
   categoriaPadreId = signal('');
-  categoriasDisponibles = signal<{ id: string; nombre: string }[]>([]);
+  categoriasParaSelect = signal<{ id: string; nombreCompleto: string }[]>([]);
   loading = signal(false);
   error = signal('');
 
+  returnToRecurso = signal(false);
+  recursoId = signal<string | null>(null);
+
   ngOnInit(): void {
-    this.cargarCategoriasDisponibles();
+    this.returnToRecurso.set(localStorage.getItem('returnToRecurso') === 'true');
+    const savedRecursoId = localStorage.getItem('recursoId');
+    if (savedRecursoId) {
+      this.recursoId.set(savedRecursoId);
+    }
+
+    this.cargarCategorias();
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -38,20 +47,63 @@ export class FormularioCategoriaComponent implements OnInit {
     }
   }
 
-  cargarCategoriasDisponibles(): void {
+  cargarCategorias(): void {
     this.categoriaService.getAll().subscribe({
       next: (data) => {
-        const categoriasMapeadas = data.map(categoria => ({
-          id: categoria.id || '',
-          nombre: categoria.nombre || ''
-        }));
-        this.categoriasDisponibles.set(categoriasMapeadas);
+        const opciones = this.construirOpcionesConJerarquia(data);
+        this.categoriasParaSelect.set(opciones);
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error al cargar categorías:', err);
         this.error.set('Error al cargar las categorías');
       }
     });
   }
+
+  construirOpcionesConJerarquia(categorias: Categoria[]): { id: string; nombreCompleto: string }[] {
+    const mapaCategorias = new Map<string, Categoria>();
+    for (const cat of categorias) {
+      mapaCategorias.set(cat.id!, cat);
+    }
+
+    const obtenerNombreCompleto = (categoria: Categoria): string => {
+      const partes: string[] = [categoria.nombre];
+      let actual = categoria;
+      let contador = 0;
+      const maxIteraciones = 100; // Evitar loops infinitos
+
+      while (actual.categoriaPadreId && contador < maxIteraciones) {
+        const padre = mapaCategorias.get(actual.categoriaPadreId);
+        if (!padre) break;
+        partes.unshift(padre.nombre);
+        actual = padre;
+        contador++;
+      }
+
+      return partes.join(' > ');
+    };
+
+    const resultado: { id: string; nombreCompleto: string }[] = [];
+
+    for (const cat of categorias) {
+      resultado.push({
+        id: cat.id!,
+        nombreCompleto: obtenerNombreCompleto(cat)
+      });
+    }
+
+    resultado.sort((a, b) => a.nombreCompleto.localeCompare(b.nombreCompleto));
+
+    return resultado;
+  }
+
+  getCategoriasPadreDisponibles(): { id: string; nombreCompleto: string }[] {
+    if (!this.esEdicion()) {
+      return this.categoriasParaSelect();
+    }
+    return this.categoriasParaSelect().filter(cat => cat.id !== this.categoriaId());
+  }
+
   cargarCategoria(): void {
     this.loading.set(true);
     this.error.set('');
@@ -90,8 +142,20 @@ export class FormularioCategoriaComponent implements OnInit {
       : this.categoriaService.create(data);
 
     operacion.subscribe({
-      next: () => {
-        this.router.navigate(['/categorias']);
+      next: (response) => {
+        localStorage.removeItem('returnToRecurso');
+        localStorage.removeItem('recursoId');
+
+        if (this.returnToRecurso()) {
+          if (this.recursoId()) {
+            this.router.navigate(['/recursos/editar', this.recursoId()]);
+          } else {
+            this.router.navigate(['/recursos/nuevo']);
+          }
+        } else {
+          const id = response.id || this.categoriaId();
+          this.router.navigate(['/categorias/detalle', id]);
+        }
       },
       error: (err) => {
         this.loading.set(false);

@@ -473,7 +473,11 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
 
   irACategorias(): void {
     this.ngOnDestroy();
-    this.router.navigate(['/categorias/nuevo'], { queryParams: { returnTo: 'recurso' } });
+    localStorage.setItem('returnToRecurso', 'true');
+    if (this.recursoId()) {
+      localStorage.setItem('recursoId', this.recursoId()!);
+    }
+    this.router.navigate(['/categorias/nuevo']);
   }
 
   irAEtiquetas(): void {

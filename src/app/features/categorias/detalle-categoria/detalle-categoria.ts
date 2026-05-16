@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CategoriaService, Categoria } from '../../../core/services/categoria';
+import { RecursoService } from '../../../core/services/recurso';
 
 @Component({
   selector: 'app-detalle-categoria',
@@ -14,6 +15,7 @@ import { CategoriaService, Categoria } from '../../../core/services/categoria';
 // Componente para el detalle de una categoría:
 export class DetalleCategoriaComponent implements OnInit, OnDestroy {
   private categoriaService = inject(CategoriaService);
+  private recursoService = inject(RecursoService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -50,6 +52,7 @@ export class DetalleCategoriaComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.categoria.set(data);
         this.cargarSubcategorias(id);
+        this.cargarRecursosAsociados(id);
         this.loading.set(false);
       },
       error: () => {
@@ -72,8 +75,28 @@ export class DetalleCategoriaComponent implements OnInit, OnDestroy {
     });
   }
 
+  cargarRecursosAsociados(categoriaId: string): void {
+    this.recursoService.getAll().subscribe({
+      next: (recursos) => {
+        const filtrados = recursos.filter(recurso =>
+          recurso.categorias && Array.isArray(recurso.categorias) &&
+          recurso.categorias.some((c: any) => (c.id || c._id) === categoriaId)
+        );
+        this.recursosAsociados.set(filtrados);
+      },
+      error: () => {
+        console.error('Error al cargar recursos asociados');
+        this.recursosAsociados.set([]);
+      }
+    });
+  }
+
   irADetalle(id: string): void {
     this.router.navigate(['/categorias/detalle', id]);
+  }
+
+  irADetalleRecurso(id: string): void {
+    this.router.navigate(['/recursos/detalle', id]);
   }
 
   confirmarEliminar(): void {

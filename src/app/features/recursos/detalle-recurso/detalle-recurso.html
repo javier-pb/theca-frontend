@@ -8,7 +8,6 @@
   }
 
   @if (recurso() && !loading() && !error()) {
-    <!-- Título: -->
     <h1 class="page-title">DETALLE DEL RECURSO</h1>
 
     <div class="detalle-content">
@@ -110,8 +109,15 @@
             } @else {
               <ul class="items-lista">
                 @for (categoria of categoriasList(); track categoria.id) {
-                  <li class="item-link" (click)="irADetalleCategoria(categoria.id)">
-                    {{ categoria.nombre }}
+                  <li class="categoria-jerarquica">
+                    @for (item of categoria.rutaCompleta; track item.id; let last = $last) {
+                      <span class="categoria-nivel" (click)="irADetalleCategoria(item.id)">
+                        {{ item.nombre }}
+                      </span>
+                      @if (!last) {
+                        <span class="categoria-separador"> &gt; </span>
+                      }
+                    }
                   </li>
                 }
               </ul>
@@ -122,17 +128,18 @@
         <!-- Etiquetas: -->
         <div class="info-group">
           <span class="info-label">Etiquetas:</span>
-          <div class="info-value">
+          <div class="info-value etiquetas-inline">
             @if (etiquetasList().length === 0) {
               <span>Sin etiqueta</span>
             } @else {
-              <ul class="items-lista">
-                @for (etiqueta of etiquetasList(); track etiqueta.id) {
-                  <li class="item-link" (click)="irADetalleEtiqueta(etiqueta.id)">
-                    {{ etiqueta.nombre }}
-                  </li>
+              @for (etiqueta of etiquetasList(); track etiqueta.id; let last = $last) {
+                <span class="etiqueta-item" (click)="irADetalleEtiqueta(etiqueta.id)">
+                  <span class="hashtag">#</span>{{ etiqueta.nombre }}
+                </span>
+                @if (!last) {
+                  <span class="comma">, </span>
                 }
-              </ul>
+              }
             }
           </div>
         </div>

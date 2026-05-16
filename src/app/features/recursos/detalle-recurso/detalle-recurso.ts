@@ -3,9 +3,18 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { RecursoService } from '../../../core/services/recurso';
 import { AutorService } from '../../../core/services/autor';
-import { CategoriaService } from '../../../core/services/categoria';
+import { CategoriaService, Categoria } from '../../../core/services/categoria';
 import { EtiquetaService } from '../../../core/services/etiqueta';
 import { TipoService } from '../../../core/services/tipo';
+
+interface CategoriaJerarquica {
+  id: string;
+  displayNombre: string;
+  nivel: number;
+  nombre: string;
+  ancestros: string[];
+  rutaCompleta: { id: string; nombre: string }[];
+}
 
 @Component({
   selector: 'app-detalle-recurso',
@@ -14,7 +23,7 @@ import { TipoService } from '../../../core/services/tipo';
   templateUrl: './detalle-recurso.html',
   styleUrls: ['./detalle-recurso.css']
 })
-// Componente para el detalle de un recurso:
+// Compponente para el detalle de un recurso:
 export class DetalleRecursoComponent implements OnInit {
   recurso = signal<any>(null);
   loading = signal(true);
@@ -22,14 +31,11 @@ export class DetalleRecursoComponent implements OnInit {
   mostrarModal = signal(false);
   actualizandoPortada = signal(false);
 
-  autoresTexto = signal('');
-  categoriasTexto = signal('');
-  etiquetasTexto = signal('');
   tipoNombre = signal('');
   tipoId = signal('');
 
   autoresList = signal<any[]>([]);
-  categoriasList = signal<any[]>([]);
+  categoriasList = signal<CategoriaJerarquica[]>([]);
   etiquetasList = signal<any[]>([]);
 
   constructor(
@@ -59,15 +65,10 @@ export class DetalleRecursoComponent implements OnInit {
     this.recursoService.getById(id).subscribe({
       next: (data) => {
         this.recurso.set(data);
-
         this.procesarAutores(data.autores);
-
         this.procesarTipo(data.tipos);
-
         this.procesarCategorias(data.categorias);
-
         this.procesarEtiquetas(data.etiquetas);
-
         this.loading.set(false);
       },
       error: () => {
@@ -80,23 +81,21 @@ export class DetalleRecursoComponent implements OnInit {
   procesarAutores(autores: any[]): void {
     if (!autores || autores.length === 0) {
       this.autoresList.set([]);
-      this.autoresTexto.set('');
       return;
     }
 
     if (autores[0] && autores[0].nombre) {
-      this.autoresList.set(autores);
-      this.autoresTexto.set(autores.map((a: any) => a.nombre).join(', '));
+      const ordenados = [...autores].sort((a, b) => a.nombre.localeCompare(b.nombre));
+      this.autoresList.set(ordenados);
     } else {
       const ids = autores.map((a: any) => a.id || a._id);
       const peticiones = ids.map((id: string) => this.autorService.getById(id));
 
       Promise.all(peticiones.map(p => p.toPromise())).then((resultados: any[]) => {
-        this.autoresList.set(resultados);
-        this.autoresTexto.set(resultados.map((a: any) => a.nombre).join(', '));
+        const ordenados = resultados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        this.autoresList.set(ordenados);
       }).catch(() => {
         this.autoresList.set([]);
-        this.autoresTexto.set('');
       });
     }
   }
@@ -129,47 +128,111 @@ export class DetalleRecursoComponent implements OnInit {
   procesarCategorias(categorias: any[]): void {
     if (!categorias || categorias.length === 0) {
       this.categoriasList.set([]);
-      this.categoriasTexto.set('');
       return;
     }
 
-    if (categorias[0] && categorias[0].nombre) {
-      this.categoriasList.set(categorias);
-      this.categoriasTexto.set(categorias.map((c: any) => c.nombre).join(', '));
-    } else {
-      const ids = categorias.map((c: any) => c.id || c._id);
-      const peticiones = ids.map((id: string) => this.categoriaService.getById(id));
+    this.categoriaService.getAll().subscribe({
+      next: (todasCategorias) => {
+        const mapaCategorias = new Map<string, any>();
+        for (const cat of todasCategorias) {
+          mapaCategorias.set(cat.id!, cat);
+        }
 
-      Promise.all(peticiones.map(p => p.toPromise())).then((resultados: any[]) => {
-        this.categoriasList.set(resultados);
-        this.categoriasTexto.set(resultados.map((c: any) => c.nombre).join(', '));
-      }).catch(() => {
-        this.categoriasList.set([]);
-        this.categoriasTexto.set('');
-      });
+        const ids = categorias.map((c: any) => c.id || c._id);
+        const resultadoTemp: CategoriaJerarquica[] = [];
+
+        for (const id of ids) {
+          const categoria = mapaCategorias.get(id);
+          if (categoria) {
+            const { displayNombre, nivel, ancestros, rutaCompleta } = this.obtenerNombreJerarquicoConRuta(categoria, mapaCategorias);
+            resultadoTemp.push({
+              id,
+              displayNombre,
+              nivel,
+              nombre: categoria.nombre,
+              ancestros,
+              rutaCompleta
+            });
+          }
+        }
+
+        const categoriasFiltradas = resultadoTemp.filter(cat => {
+          const esAncestroDeOtra = resultadoTemp.some(otra =>
+            otra.id !== cat.id && otra.ancestros.includes(cat.id)
+          );
+          return !esAncestroDeOtra;
+        });
+
+        categoriasFiltradas.sort((a, b) => a.displayNombre.localeCompare(b.displayNombre));
+        this.categoriasList.set(categoriasFiltradas);
+      },
+      error: () => {
+        console.error('Error al cargar jerarquía de categorías');
+        const simple = categorias.map((c: any) => ({
+          id: c.id || c._id,
+          displayNombre: c.nombre || '',
+          nivel: 0,
+          nombre: c.nombre || '',
+          ancestros: [],
+          rutaCompleta: [{ id: c.id || c._id, nombre: c.nombre || '' }]
+        }));
+        simple.sort((a, b) => a.displayNombre.localeCompare(b.displayNombre));
+        this.categoriasList.set(simple);
+      }
+    });
+  }
+
+  obtenerNombreJerarquicoConRuta(categoria: any, mapaCategorias: Map<string, any>): {
+    displayNombre: string;
+    nivel: number;
+    ancestros: string[];
+    rutaCompleta: { id: string; nombre: string }[];
+  } {
+    const ruta: { id: string; nombre: string }[] = [{ id: categoria.id, nombre: categoria.nombre }];
+    const ancestros: string[] = [];
+    let actual = categoria;
+    let nivel = 0;
+    let contador = 0;
+    const maxIteraciones = 100;
+
+    while (actual.categoriaPadreId && contador < maxIteraciones) {
+      const padre = mapaCategorias.get(actual.categoriaPadreId);
+      if (!padre) break;
+      ruta.unshift({ id: padre.id, nombre: padre.nombre });
+      ancestros.push(padre.id);
+      actual = padre;
+      nivel++;
+      contador++;
     }
+
+    const displayNombre = ruta.map(p => p.nombre).join(' > ');
+
+    return {
+      displayNombre: displayNombre,
+      nivel: nivel,
+      ancestros: ancestros,
+      rutaCompleta: ruta
+    };
   }
 
   procesarEtiquetas(etiquetas: any[]): void {
     if (!etiquetas || etiquetas.length === 0) {
       this.etiquetasList.set([]);
-      this.etiquetasTexto.set('');
       return;
     }
 
     if (etiquetas[0] && etiquetas[0].nombre) {
-      this.etiquetasList.set(etiquetas);
-      this.etiquetasTexto.set(etiquetas.map((e: any) => e.nombre).join(', '));
+      const ordenados = [...etiquetas].sort((a, b) => a.nombre.localeCompare(b.nombre));
+      this.etiquetasList.set(ordenados);
     } else {
       const ids = etiquetas.map((e: any) => e.id || e._id);
       const peticiones = ids.map((id: string) => this.etiquetaService.getById(id));
 
       Promise.all(peticiones.map(p => p.toPromise())).then((resultados: any[]) => {
-        this.etiquetasList.set(resultados);
-        this.etiquetasTexto.set(resultados.map((e: any) => e.nombre).join(', '));
+        const ordenados = resultados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        this.etiquetasList.set(ordenados);
       }).catch(() => {
         this.etiquetasList.set([]);
-        this.etiquetasTexto.set('');
       });
     }
   }

@@ -584,10 +584,13 @@ describe('FormularioRecursoComponent', () => {
       expect(router.navigate).toHaveBeenCalledWith(['/autores/nuevo'], { queryParams: { returnTo: 'recurso' } });
     });
 
-    it('should navigate to categorias with returnTo param', () => {
+    it('should navigate to categorias and save state to localStorage', () => {
       spyOn(router, 'navigate');
+      spyOn(localStorage, 'setItem');
       component.irACategorias();
-      expect(router.navigate).toHaveBeenCalledWith(['/categorias/nuevo'], { queryParams: { returnTo: 'recurso' } });
+
+      expect(localStorage.setItem).toHaveBeenCalledWith('returnToRecurso', 'true');
+      expect(router.navigate).toHaveBeenCalledWith(['/categorias/nuevo']);
     });
 
     it('should navigate to tipos with returnTo param', () => {

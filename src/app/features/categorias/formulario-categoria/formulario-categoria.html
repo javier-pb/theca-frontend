@@ -36,8 +36,8 @@
             (ngModelChange)="categoriaPadreId.set($event)"
             name="categoriaPadreId">
             <option value="">Seleccione una categoría</option>
-            @for (categoria of categoriasDisponibles(); track categoria.id) {
-              <option [value]="categoria.id">{{ categoria.nombre }}</option>
+            @for (categoria of getCategoriasPadreDisponibles(); track categoria.id) {
+              <option [value]="categoria.id">{{ categoria.nombreCompleto }}</option>
             }
           </select>
         </div>

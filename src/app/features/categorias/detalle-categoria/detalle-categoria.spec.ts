@@ -6,16 +6,20 @@ import { By } from '@angular/platform-browser';
 
 import { DetalleCategoriaComponent } from './detalle-categoria';
 import { CategoriaService, Categoria } from '../../../core/services/categoria';
+import { RecursoService } from '../../../core/services/recurso';
 import { Component } from '@angular/core';
 
 @Component({ template: '' })
 class DummyComponent {}
 
-// Test unitario para el detalle de la categoría:
+
+// Test unitario para el detalle de una categoría:
 describe('DetalleCategoriaComponent', () => {
+
   let component: DetalleCategoriaComponent;
   let fixture: ComponentFixture<DetalleCategoriaComponent>;
   let categoriaService: jasmine.SpyObj<CategoriaService>;
+  let recursoService: jasmine.SpyObj<RecursoService>;
   let router: Router;
 
   const mockCategoria: Categoria = {
@@ -29,10 +33,17 @@ describe('DetalleCategoriaComponent', () => {
     { id: '3', nombre: 'Subcategoría B', categoriaPadreId: '1' }
   ];
 
+  const mockRecursos = [
+    { id: 'r1', titulo: 'Recurso con categoría 1', categorias: [{ id: '1' }] },
+    { id: 'r2', titulo: 'Recurso con categoría 2', categorias: [{ id: '2' }] },
+    { id: 'r3', titulo: 'Otro recurso', categorias: [{ id: '1' }] }
+  ];
+
   beforeEach(async () => {
     categoriaService = jasmine.createSpyObj('CategoriaService', [
       'getById', 'getAll', 'delete'
     ]);
+    recursoService = jasmine.createSpyObj('RecursoService', ['getAll']);
 
     const mockActivatedRoute = {
       params: of({ id: '1' })
@@ -43,11 +54,14 @@ describe('DetalleCategoriaComponent', () => {
         DetalleCategoriaComponent,
         RouterTestingModule.withRoutes([
           { path: 'categorias', component: DummyComponent },
-          { path: 'categorias/detalle/2', component: DummyComponent }
+          { path: 'categorias/detalle/2', component: DummyComponent },
+          { path: 'recursos/detalle/r1', component: DummyComponent },
+          { path: 'recursos/detalle/r3', component: DummyComponent }
         ])
       ],
       providers: [
         { provide: CategoriaService, useValue: categoriaService },
+        { provide: RecursoService, useValue: recursoService },
         { provide: ActivatedRoute, useValue: mockActivatedRoute }
       ]
     }).compileComponents();
@@ -62,6 +76,7 @@ describe('DetalleCategoriaComponent', () => {
     categoriaService.getById.calls.reset();
     categoriaService.getAll.calls.reset();
     categoriaService.delete.calls.reset();
+    recursoService.getAll.calls.reset();
   });
 
   describe('Component Creation', () => {
@@ -72,6 +87,7 @@ describe('DetalleCategoriaComponent', () => {
     it('should initialize with default values', () => {
       expect(component.categoria()).toBeNull();
       expect(component.subcategorias()).toEqual([]);
+      expect(component.recursosAsociados()).toEqual([]);
       expect(component.loading()).toBe(true);
       expect(component.error()).toBe('');
       expect(component.mostrarModal()).toBe(false);
@@ -82,6 +98,7 @@ describe('DetalleCategoriaComponent', () => {
     it('should load categoria successfully', fakeAsync(() => {
       categoriaService.getById.and.returnValue(of(mockCategoria));
       categoriaService.getAll.and.returnValue(of(mockSubcategorias));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
 
       component.cargarCategoria('1');
       tick();
@@ -140,6 +157,50 @@ describe('DetalleCategoriaComponent', () => {
     });
   });
 
+  describe('cargarRecursosAsociados', () => {
+    it('should load recursos asociados successfully', () => {
+      recursoService.getAll.and.returnValue(of(mockRecursos));
+
+      component.cargarRecursosAsociados('1');
+
+      expect(recursoService.getAll).toHaveBeenCalled();
+      expect(component.recursosAsociados().length).toBe(2);
+      expect(component.recursosAsociados()[0].id).toBe('r1');
+      expect(component.recursosAsociados()[1].id).toBe('r3');
+    });
+
+    it('should handle resources with categorias as objects with _id', () => {
+      const recursosConId = [
+        { id: 'r1', titulo: 'Recurso 1', categorias: [{ _id: '1' }] },
+        { id: 'r2', titulo: 'Recurso 2', categorias: [{ _id: '2' }] },
+        { id: 'r3', titulo: 'Recurso 3', categorias: [{ _id: '1' }] }
+      ];
+      recursoService.getAll.and.returnValue(of(recursosConId));
+
+      component.cargarRecursosAsociados('1');
+
+      expect(component.recursosAsociados().length).toBe(2);
+    });
+
+    it('should handle empty recursos list', () => {
+      recursoService.getAll.and.returnValue(of([]));
+
+      component.cargarRecursosAsociados('1');
+
+      expect(component.recursosAsociados().length).toBe(0);
+    });
+
+    it('should handle error when loading recursos', () => {
+      recursoService.getAll.and.returnValue(throwError(() => new Error('Error')));
+      const consoleSpy = spyOn(console, 'error');
+
+      component.cargarRecursosAsociados('1');
+
+      expect(consoleSpy).toHaveBeenCalled();
+      expect(component.recursosAsociados()).toEqual([]);
+    });
+  });
+
   describe('irADetalle', () => {
     it('should navigate to subcategoria detail', fakeAsync(() => {
       spyOn(router, 'navigate');
@@ -150,10 +211,21 @@ describe('DetalleCategoriaComponent', () => {
     }));
   });
 
+  describe('irADetalleRecurso', () => {
+    it('should navigate to recurso detail', fakeAsync(() => {
+      spyOn(router, 'navigate');
+
+      component.irADetalleRecurso('r1');
+
+      expect(router.navigate).toHaveBeenCalledWith(['/recursos/detalle', 'r1']);
+    }));
+  });
+
   describe('Eliminar categoría', () => {
     beforeEach(() => {
       categoriaService.getById.and.returnValue(of(mockCategoria));
       categoriaService.getAll.and.returnValue(of(mockSubcategorias));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       component.cargarCategoria('1');
     });
 
@@ -191,12 +263,20 @@ describe('DetalleCategoriaComponent', () => {
       expect(component.loading()).toBe(false);
       expect(component.mostrarModal()).toBe(false);
     }));
+
+    it('should not delete when id is undefined', () => {
+      component.categoria.set({ ...mockCategoria, id: undefined });
+      component.eliminar();
+
+      expect(categoriaService.delete).not.toHaveBeenCalled();
+    });
   });
 
   describe('Template rendering', () => {
     beforeEach(() => {
       categoriaService.getById.and.returnValue(of(mockCategoria));
       categoriaService.getAll.and.returnValue(of(mockSubcategorias));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       component.cargarCategoria('1');
       fixture.detectChanges();
     });
@@ -217,6 +297,18 @@ describe('DetalleCategoriaComponent', () => {
       expect(subcategorias.length).toBe(2);
       expect(subcategorias[0].textContent).toContain('Subcategoría A');
       expect(subcategorias[1].textContent).toContain('Subcategoría B');
+    });
+
+    it('should display number of recursos asociados', () => {
+      const numero = fixture.debugElement.nativeElement.querySelector('.info-group:nth-child(3) .info-value');
+      expect(numero.textContent).toContain('2');
+    });
+
+    it('should display recursos asociados list', () => {
+      const recursos = fixture.debugElement.nativeElement.querySelectorAll('.recurso-item');
+      expect(recursos.length).toBe(2);
+      expect(recursos[0].textContent).toContain('Recurso con categoría 1');
+      expect(recursos[1].textContent).toContain('Otro recurso');
     });
 
     it('should render editar button', () => {
@@ -246,12 +338,21 @@ describe('DetalleCategoriaComponent', () => {
       expect(error).toBeTruthy();
       expect(error.textContent).toContain('Error de prueba');
     });
+
+    it('should show empty state when no recursos asociados', () => {
+      component.recursosAsociados.set([]);
+      fixture.detectChanges();
+
+      const recursosText = fixture.debugElement.nativeElement.querySelector('.info-group:nth-child(4) .info-value');
+      expect(recursosText.textContent).toContain('No hay recursos asociados a esta categoría');
+    });
   });
 
   describe('Modal template', () => {
     beforeEach(() => {
       categoriaService.getById.and.returnValue(of(mockCategoria));
       categoriaService.getAll.and.returnValue(of(mockSubcategorias));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       component.cargarCategoria('1');
       fixture.detectChanges();
     });

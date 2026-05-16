@@ -108,6 +108,55 @@
   font-size: 0.95rem;
 }
 
+/* Categoría jerárquica */
+.categoria-jerarquica {
+  margin: 0.25rem 0;
+  line-height: 1.4;
+}
+
+.categoria-nivel {
+  cursor: pointer;
+  color: #2c3e50;
+  transition: color 0.2s;
+}
+
+.categoria-nivel:hover {
+  color: #4A6875;
+  text-decoration: underline;
+}
+
+.categoria-separador {
+  color: #6b7d85;
+  margin: 0 0.2rem;
+}
+
+/* Etiquetas en línea clicables */
+.etiquetas-inline {
+  display: inline;
+  flex-wrap: wrap;
+}
+
+.etiqueta-item {
+  display: inline;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.etiqueta-item:hover {
+  color: #4A6875;
+  text-decoration: underline;
+}
+
+.hashtag {
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.comma {
+  margin-right: 0.25rem;
+  color: #2c3e50;
+}
+
 /* Estado de carga de portada: */
 .portada-wrapper {
   position: relative;
