@@ -578,10 +578,15 @@ describe('FormularioRecursoComponent', () => {
       setupCreateMode();
     });
 
-    it('should navigate to autores with returnTo param', () => {
+    it('should navigate to autores and save state to localStorage', () => {
       spyOn(router, 'navigate');
+      spyOn(localStorage, 'setItem');
+      component.recursoId.set('123');
       component.irAAutores();
-      expect(router.navigate).toHaveBeenCalledWith(['/autores/nuevo'], { queryParams: { returnTo: 'recurso' } });
+
+      expect(localStorage.setItem).toHaveBeenCalledWith('returnToRecurso', 'true');
+      expect(localStorage.setItem).toHaveBeenCalledWith('recursoId', '123');
+      expect(router.navigate).toHaveBeenCalledWith(['/autores/nuevo']);
     });
 
     it('should navigate to categorias and save state to localStorage', () => {

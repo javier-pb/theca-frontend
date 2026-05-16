@@ -6,6 +6,7 @@ import { By } from '@angular/platform-browser';
 
 import { ListaAutoresComponent } from './lista-autores';
 import { AutorService, Autor } from '../../../core/services/autor';
+import { RecursoService } from '../../../core/services/recurso';
 import { Component } from '@angular/core';
 
 @Component({ template: '' })
@@ -17,6 +18,7 @@ describe('ListaAutoresComponent', () => {
   let component: ListaAutoresComponent;
   let fixture: ComponentFixture<ListaAutoresComponent>;
   let autorService: jasmine.SpyObj<AutorService>;
+  let recursoService: jasmine.SpyObj<RecursoService>;
   let router: Router;
 
   const mockAutores: Autor[] = [
@@ -27,19 +29,35 @@ describe('ListaAutoresComponent', () => {
     { id: '5', nombre: 'Anónimo Especial' }
   ];
 
+  const mockRecursosConSinAutor = [
+    { id: '1', titulo: 'Recurso con autor', autores: [{ id: '1' }] },
+    { id: '2', titulo: 'Recurso sin autor 1', autores: [] },
+    { id: '3', titulo: 'Recurso sin autor 2', autores: null }
+  ];
+
+  const mockRecursosTodosConAutor = [
+    { id: '1', titulo: 'Recurso 1', autores: [{ id: '1' }] },
+    { id: '2', titulo: 'Recurso 2', autores: [{ id: '2' }] }
+  ];
+
   beforeEach(() => {
-    autorService = jasmine.createSpyObj('AutorService', ['getAll', 'delete']);
+    autorService = jasmine.createSpyObj('AutorService', ['getAll']);
+    recursoService = jasmine.createSpyObj('RecursoService', ['getAll']);
+
     autorService.getAll.and.returnValue(of(mockAutores));
+    recursoService.getAll.and.returnValue(of(mockRecursosConSinAutor));
 
     TestBed.configureTestingModule({
       imports: [
         ListaAutoresComponent,
         RouterTestingModule.withRoutes([
-          { path: 'autores/detalle/1', component: DummyComponent }
+          { path: 'autores/detalle/1', component: DummyComponent },
+          { path: 'autores/detalle/anonimo', component: DummyComponent }
         ])
       ],
       providers: [
-        { provide: AutorService, useValue: autorService }
+        { provide: AutorService, useValue: autorService },
+        { provide: RecursoService, useValue: recursoService }
       ]
     }).compileComponents();
 
@@ -50,7 +68,7 @@ describe('ListaAutoresComponent', () => {
 
   afterEach(() => {
     autorService.getAll.calls.reset();
-    autorService.delete.calls.reset();
+    recursoService.getAll.calls.reset();
   });
 
   describe('Component Creation', () => {
@@ -65,6 +83,7 @@ describe('ListaAutoresComponent', () => {
       expect(component.loading()).toBe(true);
       expect(component.error()).toBe('');
       expect(component.grupos()).toEqual([]);
+      expect(component.mostrarAnonimo()).toBe(false);
     });
   });
 
@@ -91,11 +110,35 @@ describe('ListaAutoresComponent', () => {
     }));
   });
 
+  describe('verificarRecursosSinAutor', () => {
+    it('should set mostrarAnonimo to true when there are recursos sin autor', () => {
+      recursoService.getAll.and.returnValue(of(mockRecursosConSinAutor));
+      component.verificarRecursosSinAutor();
+      expect(component.mostrarAnonimo()).toBe(true);
+    });
+
+    it('should set mostrarAnonimo to false when all recursos have autor', () => {
+      recursoService.getAll.and.returnValue(of(mockRecursosTodosConAutor));
+      component.verificarRecursosSinAutor();
+      expect(component.mostrarAnonimo()).toBe(false);
+    });
+
+    it('should handle error when loading recursos', () => {
+      recursoService.getAll.and.returnValue(throwError(() => new Error('Error')));
+      const consoleSpy = spyOn(console, 'error');
+      component.verificarRecursosSinAutor();
+      expect(consoleSpy).toHaveBeenCalled();
+      expect(component.mostrarAnonimo()).toBe(false);
+    });
+  });
+
   describe('ngOnInit', () => {
-    it('should call cargarAutores on init', () => {
+    it('should call cargarAutores and verificarRecursosSinAutor on init', () => {
       spyOn(component, 'cargarAutores');
+      spyOn(component, 'verificarRecursosSinAutor');
       component.ngOnInit();
       expect(component.cargarAutores).toHaveBeenCalled();
+      expect(component.verificarRecursosSinAutor).toHaveBeenCalled();
     });
   });
 
@@ -218,16 +261,23 @@ describe('ListaAutoresComponent', () => {
   describe('irADetalle', () => {
     it('should navigate to autor detalle', () => {
       spyOn(router, 'navigate');
-
       component.irADetalle('1');
-
       expect(router.navigate).toHaveBeenCalledWith(['/autores/detalle', '1']);
+    });
+  });
+
+  describe('irAAnonimo', () => {
+    it('should navigate to anonimo detalle', () => {
+      spyOn(router, 'navigate');
+      component.irAAnonimo();
+      expect(router.navigate).toHaveBeenCalledWith(['/autores/detalle/anonimo']);
     });
   });
 
   describe('Template rendering', () => {
     beforeEach(fakeAsync(() => {
       component.cargarAutores();
+      component.verificarRecursosSinAutor();
       tick();
       fixture.detectChanges();
     }));
@@ -269,6 +319,7 @@ describe('ListaAutoresComponent', () => {
     it('should show empty state when no autores', () => {
       component.autores.set([]);
       component.autoresFiltrados.set([]);
+      component.mostrarAnonimo.set(false);  // Asegurar que anonimo no se muestra
       component.loading.set(false);
       component.error.set('');
       fixture.detectChanges();
@@ -276,6 +327,23 @@ describe('ListaAutoresComponent', () => {
       const empty = fixture.debugElement.nativeElement.querySelector('.empty');
       expect(empty).toBeTruthy();
       expect(empty.textContent).toContain('No hay autores');
+    });
+
+    it('should show anonimo card when mostrarAnonimo is true', () => {
+      component.mostrarAnonimo.set(true);
+      fixture.detectChanges();
+
+      const anonimoCard = fixture.debugElement.nativeElement.querySelector('.anonimo-card');
+      expect(anonimoCard).toBeTruthy();
+      expect(anonimoCard.textContent).toContain('Anónimo');
+    });
+
+    it('should not show anonimo card when mostrarAnonimo is false', () => {
+      component.mostrarAnonimo.set(false);
+      fixture.detectChanges();
+
+      const anonimoCard = fixture.debugElement.nativeElement.querySelector('.anonimo-card');
+      expect(anonimoCard).toBeFalsy();
     });
   });
 

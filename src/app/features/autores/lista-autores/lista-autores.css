@@ -91,6 +91,22 @@
   text-align: center;
 }
 
+.anonimo-card {
+  background-color: #5980a6;
+}
+
+.anonimo-card .autor-nombre {
+  color: white;
+}
+
+.anonimo-card:hover {
+  background-color: #4A6875;
+}
+
+.anonimo-card:hover .autor-nombre {
+  color: white;
+}
+
 .loading, .error, .empty {
   text-align: center;
   padding: 2rem;

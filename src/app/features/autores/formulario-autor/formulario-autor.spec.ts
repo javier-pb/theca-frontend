@@ -13,7 +13,6 @@ import { Component } from '@angular/core';
 @Component({ template: '' })
 class DummyComponent {}
 
-// Test unitario para el formulario de autores:
 describe('FormularioAutorComponent', () => {
 
   let component: FormularioAutorComponent;
@@ -32,6 +31,11 @@ describe('FormularioAutorComponent', () => {
   const mockAutor = {
     id: '1',
     nombre: 'Gabriel García Márquez'
+  };
+
+  const mockAutorCreado = {
+    id: '3',
+    nombre: 'Nuevo Autor'
   };
 
   const mockRecursosAsociados = [
@@ -55,8 +59,6 @@ describe('FormularioAutorComponent', () => {
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
     fixture.detectChanges();
-
-    return { component, fixture };
   };
 
   const setupEditMode = () => {
@@ -77,8 +79,6 @@ describe('FormularioAutorComponent', () => {
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
     fixture.detectChanges();
-
-    return { component, fixture };
   };
 
   beforeEach(() => {
@@ -96,7 +96,11 @@ describe('FormularioAutorComponent', () => {
         FormularioAutorComponent,
         HttpClientTestingModule,
         RouterTestingModule.withRoutes([
-          { path: 'autores', component: DummyComponent }
+          { path: 'autores', component: DummyComponent },
+          { path: 'autores/detalle/1', component: DummyComponent },
+          { path: 'autores/detalle/3', component: DummyComponent },
+          { path: 'recursos/editar/123', component: DummyComponent },
+          { path: 'recursos/nuevo', component: DummyComponent }
         ])
       ],
       providers: [
@@ -112,8 +116,10 @@ describe('FormularioAutorComponent', () => {
     autorService.update.calls.reset();
     autorService.getById.calls.reset();
     autorService.getRecursosAsociados.calls.reset();
+    autorService.asociarRecursos.calls.reset();
+    autorService.desasociarRecursos.calls.reset();
     recursoService.getAll.calls.reset();
-    recursoService.search.calls.reset();
+    localStorage.clear();
   });
 
   describe('Component Creation', () => {
@@ -132,6 +138,7 @@ describe('FormularioAutorComponent', () => {
       expect(component.recursosSeleccionados()).toEqual([]);
       expect(component.loading()).toBe(false);
       expect(component.error()).toBe('');
+      expect(component.recursosDropdownOpen()).toBe(false);
     });
   });
 
@@ -144,33 +151,12 @@ describe('FormularioAutorComponent', () => {
       expect(recursoService.getAll).toHaveBeenCalledWith(mockUserId);
       expect(component.recursosDisponibles().length).toBe(3);
     });
-  });
 
-  describe('buscarRecursos', () => {
-    beforeEach(() => {
-      setupCreateMode();
-    });
-
-    it('should search recursos by titulo', fakeAsync(() => {
-      const filtrados = [mockRecursos[0]];
-      recursoService.search.and.returnValue(of(filtrados));
-      component.terminoBusquedaRecursos.set('Cien años');
-
-      component.buscarRecursos();
-      tick();
-
-      expect(recursoService.search).toHaveBeenCalledWith({ titulo: 'Cien años' });
-      expect(component.recursosDisponibles().length).toBe(1);
-      expect(component.buscando()).toBe(false);
-    }));
-
-    it('should reload all recursos when termino is empty', () => {
-      component.terminoBusquedaRecursos.set('');
-      recursoService.search.calls.reset();
-
-      component.buscarRecursos();
-
-      expect(recursoService.getAll).toHaveBeenCalled();
+    it('should sort recursos alphabetically', () => {
+      const recursosOrdenados = component.recursosDisponibles();
+      expect(recursosOrdenados[0].titulo).toBe('Cien años de soledad');
+      expect(recursosOrdenados[1].titulo).toBe('Don Quijote de la Mancha');
+      expect(recursosOrdenados[2].titulo).toBe('El amor en los tiempos del cólera');
     });
   });
 
@@ -183,12 +169,19 @@ describe('FormularioAutorComponent', () => {
       expect(component.esEdicion()).toBe(false);
     });
 
+    it('should show error if nombre is empty', () => {
+      component.nombre.set('');
+      component.onSubmit();
+      expect(component.error()).toBe('El nombre es obligatorio');
+      expect(autorService.create).not.toHaveBeenCalled();
+    });
+
     it('should create autor successfully', fakeAsync(() => {
       component.nombre.set('Nuevo Autor');
       component.recursosSeleccionados.set(['1', '2']);
 
       autorService.getRecursosAsociados.and.returnValue(of([]));
-      autorService.create.and.returnValue(of({ id: '3', nombre: 'Nuevo Autor' }));
+      autorService.create.and.returnValue(of(mockAutorCreado));
       autorService.asociarRecursos.and.returnValue(of({}));
       spyOn(router, 'navigate');
 
@@ -196,17 +189,22 @@ describe('FormularioAutorComponent', () => {
       tick();
 
       expect(autorService.create).toHaveBeenCalledWith({ nombre: 'Nuevo Autor' });
-      expect(router.navigate).toHaveBeenCalledWith(['/autores']);
+      expect(router.navigate).toHaveBeenCalledWith(['/autores/detalle', '3']);
     }));
 
-    it('should show error if nombre is empty', () => {
-      component.nombre.set('');
+    it('should asociar recursos after creation', fakeAsync(() => {
+      component.nombre.set('Nuevo Autor');
+      component.recursosSeleccionados.set(['1', '2']);
+
+      autorService.getRecursosAsociados.and.returnValue(of([]));
+      autorService.create.and.returnValue(of(mockAutorCreado));
+      autorService.asociarRecursos.and.returnValue(of({}));
 
       component.onSubmit();
+      tick();
 
-      expect(component.error()).toBe('El nombre es obligatorio');
-      expect(autorService.create).not.toHaveBeenCalled();
-    });
+      expect(autorService.asociarRecursos).toHaveBeenCalledWith('3', ['1', '2']);
+    }));
 
     it('should handle creation error', fakeAsync(() => {
       component.nombre.set('Nuevo Autor');
@@ -239,7 +237,7 @@ describe('FormularioAutorComponent', () => {
       component.nombre.set('Gabriel García Márquez (Actualizado)');
       component.recursosSeleccionados.set(['1', '2']);
       autorService.update.and.returnValue(of({ id: '1', nombre: 'Actualizado' }));
-      autorService.getRecursosAsociados.and.returnValue(of([]));
+      autorService.getRecursosAsociados.and.returnValue(of(mockRecursosAsociados));
       autorService.desasociarRecursos.and.returnValue(of({}));
       autorService.asociarRecursos.and.returnValue(of({}));
       spyOn(router, 'navigate');
@@ -248,7 +246,7 @@ describe('FormularioAutorComponent', () => {
       tick();
 
       expect(autorService.update).toHaveBeenCalledWith('1', { nombre: 'Gabriel García Márquez (Actualizado)' });
-      expect(router.navigate).toHaveBeenCalledWith(['/autores']);
+      expect(router.navigate).toHaveBeenCalledWith(['/autores/detalle', '1']);
     }));
 
     it('should handle update error', fakeAsync(() => {
@@ -263,6 +261,51 @@ describe('FormularioAutorComponent', () => {
     }));
   });
 
+  describe('Return to Recurso functionality', () => {
+    it('should initialize returnToRecurso from localStorage', () => {
+      localStorage.setItem('returnToRecurso', 'true');
+      localStorage.setItem('recursoId', '123');
+      setupCreateMode();
+
+      expect(component.returnToRecurso()).toBe(true);
+      expect(component.recursoIdRetorno()).toBe('123');
+    });
+
+    it('should navigate back to recurso edit after creating autor', fakeAsync(() => {
+      localStorage.setItem('returnToRecurso', 'true');
+      localStorage.setItem('recursoId', '123');
+      setupCreateMode();
+
+      component.nombre.set('Autor desde recurso');
+      autorService.getRecursosAsociados.and.returnValue(of([]));
+      autorService.create.and.returnValue(of({ id: '3', nombre: 'Autor desde recurso' }));
+      spyOn(router, 'navigate');
+
+      component.onSubmit();
+      tick();
+
+      expect(router.navigate).toHaveBeenCalledWith(['/recursos/editar', '123']);
+      expect(localStorage.getItem('returnToRecurso')).toBeNull();
+      expect(localStorage.getItem('recursoId')).toBeNull();
+    }));
+
+    it('should navigate to recursos/nuevo if no recursoId', fakeAsync(() => {
+      localStorage.setItem('returnToRecurso', 'true');
+      localStorage.removeItem('recursoId');
+      setupCreateMode();
+
+      component.nombre.set('Autor desde recurso nuevo');
+      autorService.getRecursosAsociados.and.returnValue(of([]));
+      autorService.create.and.returnValue(of({ id: '3', nombre: 'Autor desde recurso nuevo' }));
+      spyOn(router, 'navigate');
+
+      component.onSubmit();
+      tick();
+
+      expect(router.navigate).toHaveBeenCalledWith(['/recursos/nuevo']);
+    }));
+  });
+
   describe('toggleRecurso', () => {
     beforeEach(() => {
       setupCreateMode();
@@ -271,6 +314,7 @@ describe('FormularioAutorComponent', () => {
     it('should add recurso to seleccionados when not selected', () => {
       component.toggleRecurso('1');
       expect(component.recursosSeleccionados()).toContain('1');
+      expect(component.recursosSeleccionadosTexto()).toContain('Cien años de soledad');
     });
 
     it('should remove recurso from seleccionados when already selected', () => {
@@ -278,6 +322,81 @@ describe('FormularioAutorComponent', () => {
       component.toggleRecurso('1');
       expect(component.recursosSeleccionados()).not.toContain('1');
       expect(component.recursosSeleccionados()).toEqual(['2']);
+    });
+
+    it('should update texto after toggle', () => {
+      component.toggleRecurso('1');
+      component.toggleRecurso('2');
+      expect(component.recursosSeleccionadosTexto()).toBe('Cien años de soledad, El amor en los tiempos del cólera');
+    });
+  });
+
+  describe('toggleRecursosDropdown', () => {
+    beforeEach(() => {
+      setupCreateMode();
+    });
+
+    it('should open dropdown', () => {
+      component.toggleRecursosDropdown();
+      expect(component.recursosDropdownOpen()).toBe(true);
+    });
+
+    it('should close dropdown', () => {
+      component.recursosDropdownOpen.set(true);
+      component.toggleRecursosDropdown();
+      expect(component.recursosDropdownOpen()).toBe(false);
+    });
+  });
+
+  describe('onDocumentClick', () => {
+    beforeEach(() => {
+      setupCreateMode();
+    });
+
+    it('should close dropdown when clicking outside', () => {
+      component.recursosDropdownOpen.set(true);
+
+      const event = new Event('click');
+      Object.defineProperty(event, 'target', { value: document.createElement('div') });
+
+      component.onDocumentClick(event as MouseEvent);
+
+      expect(component.recursosDropdownOpen()).toBe(false);
+    });
+
+    it('should not close dropdown when clicking inside', () => {
+      component.recursosDropdownOpen.set(true);
+
+      const mockElement = document.createElement('div');
+      mockElement.className = 'custom-dropdown';
+      const event = new Event('click');
+      Object.defineProperty(event, 'target', { value: mockElement });
+
+      component.onDocumentClick(event as MouseEvent);
+
+      expect(component.recursosDropdownOpen()).toBe(true);
+    });
+  });
+
+  describe('checkDropdownPosition', () => {
+    beforeEach(() => {
+      setupCreateMode();
+    });
+
+    it('should exist and be callable', () => {
+      expect(() => component.checkDropdownPosition()).not.toThrow();
+    });
+  });
+
+  describe('irARecursos', () => {
+    beforeEach(() => {
+      setupCreateMode();
+    });
+
+    it('should navigate to recursos', () => {
+      spyOn(router, 'navigate');
+      component.irARecursos();
+      expect(router.navigate).toHaveBeenCalledWith(['/recursos']);
     });
   });
 
@@ -296,24 +415,43 @@ describe('FormularioAutorComponent', () => {
       expect(input).toBeTruthy();
     });
 
-    it('should render search input', () => {
-      const searchInput = fixture.debugElement.nativeElement.querySelector('.search-input');
-      expect(searchInput).toBeTruthy();
-    });
-
-    it('should render search button', () => {
-      const searchBtn = fixture.debugElement.nativeElement.querySelector('.btn-buscar');
-      expect(searchBtn).toBeTruthy();
-    });
-
-    it('should render recursos list', () => {
-      const recursosList = fixture.debugElement.nativeElement.querySelectorAll('.recurso-item');
-      expect(recursosList.length).toBeGreaterThan(0);
+    it('should render dropdown trigger', () => {
+      const trigger = fixture.debugElement.nativeElement.querySelector('.dropdown-trigger');
+      expect(trigger).toBeTruthy();
     });
 
     it('should render submit button', () => {
       const submitBtn = fixture.debugElement.nativeElement.querySelector('button[type="submit"]');
       expect(submitBtn).toBeTruthy();
+    });
+
+    it('should show loading state when loading', () => {
+      component.loading.set(true);
+      fixture.detectChanges();
+      const loading = fixture.debugElement.nativeElement.querySelector('.loading');
+      expect(loading).toBeTruthy();
+    });
+
+    it('should show error state when error', () => {
+      component.error.set('Error de prueba');
+      fixture.detectChanges();
+      const error = fixture.debugElement.nativeElement.querySelector('.error');
+      expect(error).toBeTruthy();
+    });
+  });
+
+  describe('Edit mode template', () => {
+    beforeEach(() => {
+      setupEditMode();
+    });
+
+    it('should render title for edit mode', () => {
+      const title = fixture.debugElement.nativeElement.querySelector('.page-title');
+      expect(title.textContent).toContain('EDITAR AUTOR');
+    });
+
+    it('should show selected recursos text', () => {
+      expect(component.recursosSeleccionadosTexto()).toBe('Cien años de soledad');
     });
   });
 

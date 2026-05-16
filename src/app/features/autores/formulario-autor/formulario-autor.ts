@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -13,8 +13,8 @@ import { AuthService } from '../../../core/services/auth';
   templateUrl: './formulario-autor.html',
   styleUrls: ['./formulario-autor.css']
 })
-// Componente para el formulario de autores:
-export class FormularioAutorComponent implements OnInit {
+// Componente para el formulario del autor:
+export class FormularioAutorComponent implements OnInit, OnDestroy {
 
   private autorService = inject(AutorService);
   private recursoService = inject(RecursoService);
@@ -26,13 +26,24 @@ export class FormularioAutorComponent implements OnInit {
   autorId = signal<string | null>(null);
   nombre = signal('');
   recursosSeleccionados = signal<string[]>([]);
+  recursosSeleccionadosTexto = signal('');
   recursosDisponibles = signal<{ id: string; titulo: string }[]>([]);
-  terminoBusquedaRecursos = signal('');
   loading = signal(false);
   error = signal('');
-  buscando = signal(false);
+
+  recursosDropdownOpen = signal(false);
+  recursosDropdownPosition = signal<'bottom' | 'top'>('bottom');
+
+  returnToRecurso = signal(false);
+  recursoIdRetorno = signal<string | null>(null);
 
   ngOnInit(): void {
+    this.returnToRecurso.set(localStorage.getItem('returnToRecurso') === 'true');
+    const savedRecursoId = localStorage.getItem('recursoId');
+    if (savedRecursoId) {
+      this.recursoIdRetorno.set(savedRecursoId);
+    }
+
     this.cargarRecursosDisponibles();
 
     const id = this.route.snapshot.paramMap.get('id');
@@ -43,47 +54,27 @@ export class FormularioAutorComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {}
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.custom-dropdown')) {
+      this.recursosDropdownOpen.set(false);
+    }
+  }
+
   cargarRecursosDisponibles(): void {
     const userId = this.authService.getUserId();
-
     this.recursoService.getAll(userId ?? undefined).subscribe({
       next: (data) => {
-        this.recursosDisponibles.set(data.map(r => ({ id: r.id, titulo: r.titulo })));
+        const ordenados = [...data].sort((a, b) => a.titulo.localeCompare(b.titulo));
+        this.recursosDisponibles.set(ordenados.map(r => ({ id: r.id, titulo: r.titulo })));
       },
       error: () => {
         console.error('Error al cargar recursos');
       }
     });
-  }
-
-  buscarRecursos(): void {
-    const termino = this.terminoBusquedaRecursos().trim();
-    if (!termino) {
-      this.cargarRecursosDisponibles();
-      return;
-    }
-
-    this.buscando.set(true);
-
-    const filtros = {
-      titulo: termino
-    };
-
-    this.recursoService.search(filtros).subscribe({
-      next: (data) => {
-        this.recursosDisponibles.set(data.map(r => ({ id: r.id, titulo: r.titulo })));
-        this.buscando.set(false);
-      },
-      error: () => {
-        console.error('Error en la búsqueda');
-        this.buscando.set(false);
-      }
-    });
-  }
-
-  onEnterBusqueda(event: Event): void {
-    event.preventDefault();
-    this.buscarRecursos();
   }
 
   cargarAutor(): void {
@@ -106,12 +97,29 @@ export class FormularioAutorComponent implements OnInit {
   cargarRecursosAsociados(): void {
     this.autorService.getRecursosAsociados(this.autorId()!).subscribe({
       next: (recursos) => {
-        this.recursosSeleccionados.set(recursos.map(r => r.id));
+        const ids = recursos.map(r => r.id);
+        this.recursosSeleccionados.set(ids);
+        this.actualizarTextoSeleccionados();
       },
       error: () => {
         console.error('Error al cargar recursos asociados');
       }
     });
+  }
+
+  actualizarTextoSeleccionados(): void {
+    const seleccionados = this.recursosDisponibles().filter(r =>
+      this.recursosSeleccionados().includes(r.id)
+    );
+    const texto = seleccionados.map(r => r.titulo).join(', ');
+    this.recursosSeleccionadosTexto.set(texto || '');
+  }
+
+  toggleRecursosDropdown(): void {
+    this.recursosDropdownOpen.set(!this.recursosDropdownOpen());
+    if (this.recursosDropdownOpen()) {
+      setTimeout(() => this.checkDropdownPosition(), 5);
+    }
   }
 
   toggleRecurso(recursoId: string): void {
@@ -121,6 +129,29 @@ export class FormularioAutorComponent implements OnInit {
     } else {
       this.recursosSeleccionados.set([...actuales, recursoId]);
     }
+    this.actualizarTextoSeleccionados();
+  }
+
+  checkDropdownPosition(): void {
+    setTimeout(() => {
+      const dropdown = document.querySelector('.custom-dropdown') as HTMLElement;
+      const menu = dropdown?.querySelector('.dropdown-menu') as HTMLElement;
+      const trigger = dropdown?.querySelector('.dropdown-trigger') as HTMLElement;
+
+      if (menu && trigger) {
+        const triggerRect = trigger.getBoundingClientRect();
+        const menuHeight = menu.scrollHeight;
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - triggerRect.bottom;
+        const spaceAbove = triggerRect.top;
+        const shouldShowAbove = (spaceBelow < menuHeight + 20) && (spaceAbove > menuHeight + 20);
+        this.recursosDropdownPosition.set(shouldShowAbove ? 'top' : 'bottom');
+      }
+    }, 10);
+  }
+
+  irARecursos(): void {
+    this.router.navigate(['/recursos']);
   }
 
   onSubmit(): void {
@@ -160,7 +191,18 @@ export class FormularioAutorComponent implements OnInit {
           });
         }
 
-        this.router.navigate(['/autores']);
+        localStorage.removeItem('returnToRecurso');
+        localStorage.removeItem('recursoId');
+
+        if (this.returnToRecurso()) {
+          if (this.recursoIdRetorno()) {
+            this.router.navigate(['/recursos/editar', this.recursoIdRetorno()]);
+          } else {
+            this.router.navigate(['/recursos/nuevo']);
+          }
+        } else {
+          this.router.navigate(['/autores/detalle', autorId]);
+        }
       },
       error: (err) => {
         this.loading.set(false);
