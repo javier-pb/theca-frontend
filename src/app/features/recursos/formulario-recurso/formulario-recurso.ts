@@ -109,8 +109,23 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
 
       this.cargarRecurso();
     } else {
-      this.stateService.clearState();
-      this.limpiarFormulario();
+      const savedState = this.formState();
+      if (savedState.titulo) {
+        this.titulo.set(savedState.titulo);
+        this.autoresTexto.set(savedState.autoresTexto);
+        this.portada.set(savedState.portada);
+        this.tipoId.set(savedState.tipoId || '');
+        this.version.set(savedState.version);
+        this.descripcion.set(savedState.descripcion);
+        this.enlace.set(savedState.enlace);
+        this.categoriasTexto.set(savedState.categoriasTexto.join(', '));
+        this.etiquetasTexto.set(savedState.etiquetasTexto.join(', '));
+        this.autoresIds.set(savedState.autoresIds);
+        this.categoriasIds.set(savedState.categoriasIds);
+        this.etiquetasIds.set(savedState.etiquetasIds);
+      } else {
+        this.limpiarFormulario();
+      }
     }
   }
 
@@ -461,26 +476,36 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
     }
   }
 
-  irAAutores(): void {
-    this.ngOnDestroy();
+  // Método auxiliar para guardar el estado actual:
+  private guardarEstadoYRetorno(): void {
+    this.stateService.setTitulo(this.titulo());
+    this.stateService.setAutores(this.autoresIds(), this.autoresTexto());
+    this.stateService.setPortada(this.portada());
+    this.stateService.setTipo(this.tipoId() || null);
+    this.stateService.setVersion(this.version());
+    this.stateService.setDescripcion(this.descripcion());
+    this.stateService.setEnlace(this.enlace());
+    this.stateService.setCategorias(this.categoriasIds(), this.categoriasTexto() ? this.categoriasTexto().split(', ') : []);
+    this.stateService.setEtiquetas(this.etiquetasIds(), this.etiquetasTexto() ? this.etiquetasTexto().split(', ') : []);
+
     localStorage.setItem('returnToRecurso', 'true');
     if (this.recursoId()) {
       localStorage.setItem('recursoId', this.recursoId()!);
     }
+  }
+
+  irAAutores(): void {
+    this.guardarEstadoYRetorno();
     this.router.navigate(['/autores/nuevo']);
   }
 
   irATipos(): void {
-    this.ngOnDestroy();
-    this.router.navigate(['/tipos/nuevo'], { queryParams: { returnTo: 'recurso' } });
+    this.guardarEstadoYRetorno();
+    this.router.navigate(['/tipos/nuevo']);
   }
 
   irACategorias(): void {
-    this.ngOnDestroy();
-    localStorage.setItem('returnToRecurso', 'true');
-    if (this.recursoId()) {
-      localStorage.setItem('recursoId', this.recursoId()!);
-    }
+    this.guardarEstadoYRetorno();
     this.router.navigate(['/categorias/nuevo']);
   }
 

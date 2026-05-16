@@ -201,8 +201,8 @@ describe('FormularioRecursoComponent', () => {
       expect(component.errorGeneral()).toBe('');
     });
 
-    it('should call clearState on init in create mode', () => {
-      expect(stateService.clearState).toHaveBeenCalled();
+    it('should not call clearState on init in create mode (se limpia al guardar)', () => {
+      expect(stateService.clearState).not.toHaveBeenCalled();
     });
 
     it('should load tipos, autores, categorias, etiquetas', () => {
@@ -598,10 +598,15 @@ describe('FormularioRecursoComponent', () => {
       expect(router.navigate).toHaveBeenCalledWith(['/categorias/nuevo']);
     });
 
-    it('should navigate to tipos with returnTo param', () => {
+    it('should navigate to tipos and save state to localStorage', () => {
       spyOn(router, 'navigate');
+      spyOn(localStorage, 'setItem');
+      component.recursoId.set('123');
       component.irATipos();
-      expect(router.navigate).toHaveBeenCalledWith(['/tipos/nuevo'], { queryParams: { returnTo: 'recurso' } });
+
+      expect(localStorage.setItem).toHaveBeenCalledWith('returnToRecurso', 'true');
+      expect(localStorage.setItem).toHaveBeenCalledWith('recursoId', '123');
+      expect(router.navigate).toHaveBeenCalledWith(['/tipos/nuevo']);
     });
 
     it('should open modal for etiquetas', () => {

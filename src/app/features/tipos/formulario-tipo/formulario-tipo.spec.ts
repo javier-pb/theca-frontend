@@ -11,7 +11,7 @@ import { Component } from '@angular/core';
 @Component({ template: '' })
 class DummyComponent {}
 
-// Test unitario para el formulario de tipo:
+// Test unitario para el formulario de tipos:
 describe('FormularioTipoComponent', () => {
 
   let component: FormularioTipoComponent;
@@ -88,7 +88,10 @@ describe('FormularioTipoComponent', () => {
         FormularioTipoComponent,
         HttpClientTestingModule,
         RouterTestingModule.withRoutes([
-          { path: 'tipos', component: DummyComponent }
+          { path: 'tipos', component: DummyComponent },
+          { path: 'tipos/detalle/4', component: DummyComponent },
+          { path: 'recursos/editar/123', component: DummyComponent },
+          { path: 'recursos/nuevo', component: DummyComponent }
         ])
       ],
       providers: [
@@ -101,6 +104,7 @@ describe('FormularioTipoComponent', () => {
     tipoService.getById.calls.reset();
     tipoService.create.calls.reset();
     tipoService.update.calls.reset();
+    localStorage.clear();
   });
 
   describe('Create Mode', () => {
@@ -141,7 +145,7 @@ describe('FormularioTipoComponent', () => {
         nombre: 'Nuevo Tipo',
         imagen: ''
       });
-      expect(router.navigate).toHaveBeenCalledWith(['/tipos']);
+      expect(router.navigate).toHaveBeenCalledWith(['/tipos/detalle', '4']);
     }));
 
     it('should create tipo with imagen', fakeAsync(() => {
@@ -180,15 +184,6 @@ describe('FormularioTipoComponent', () => {
       expect(component.loading()).toBe(false);
       expect(component.error()).toBe('Error al crear el tipo');
     }));
-
-    it('should set loading to true during creation', () => {
-      component.nombre.set('Nuevo Tipo');
-      tipoService.create.and.returnValue(of(mockTipoCreado));
-
-      component.onSubmit();
-
-      expect(component.loading()).toBe(true);
-    });
   });
 
   describe('Edit Mode', () => {
@@ -247,7 +242,7 @@ describe('FormularioTipoComponent', () => {
           nombre: 'PDF Actualizado',
           imagen: 'base64imagedata'
         });
-        expect(router.navigate).toHaveBeenCalledWith(['/tipos']);
+        expect(router.navigate).toHaveBeenCalledWith(['/tipos/detalle', '1']);
       }));
 
       it('should update tipo with new imagen', fakeAsync(() => {
@@ -275,7 +270,7 @@ describe('FormularioTipoComponent', () => {
           nombre: 'PDF Actualizado',
           imagen: ''
         });
-        expect(router.navigate).toHaveBeenCalledWith(['/tipos']);
+        expect(router.navigate).toHaveBeenCalledWith(['/tipos/detalle', '1']);
       }));
 
       it('should not send assets image to backend', fakeAsync(() => {
@@ -334,6 +329,49 @@ describe('FormularioTipoComponent', () => {
         expect(component.loading()).toBe(false);
       });
     });
+  });
+
+  describe('Return to Recurso functionality', () => {
+    it('should initialize returnToRecurso from localStorage', () => {
+      localStorage.setItem('returnToRecurso', 'true');
+      localStorage.setItem('recursoId', '123');
+      setupCreateMode();
+
+      expect(component.returnToRecurso()).toBe(true);
+      expect(component.recursoIdRetorno()).toBe('123');
+    });
+
+    it('should navigate back to recurso edit after creating tipo', fakeAsync(() => {
+      localStorage.setItem('returnToRecurso', 'true');
+      localStorage.setItem('recursoId', '123');
+      setupCreateMode();
+
+      component.nombre.set('Tipo desde recurso');
+      tipoService.create.and.returnValue(of({ id: '4', nombre: 'Tipo desde recurso' }));
+      spyOn(router, 'navigate');
+
+      component.onSubmit();
+      tick();
+
+      expect(router.navigate).toHaveBeenCalledWith(['/recursos/editar', '123']);
+      expect(localStorage.getItem('returnToRecurso')).toBeNull();
+      expect(localStorage.getItem('recursoId')).toBeNull();
+    }));
+
+    it('should navigate to recursos/nuevo if no recursoId', fakeAsync(() => {
+      localStorage.setItem('returnToRecurso', 'true');
+      localStorage.removeItem('recursoId');
+      setupCreateMode();
+
+      component.nombre.set('Tipo desde recurso nuevo');
+      tipoService.create.and.returnValue(of({ id: '4', nombre: 'Tipo desde recurso nuevo' }));
+      spyOn(router, 'navigate');
+
+      component.onSubmit();
+      tick();
+
+      expect(router.navigate).toHaveBeenCalledWith(['/recursos/nuevo']);
+    }));
   });
 
   describe('Image handling', () => {

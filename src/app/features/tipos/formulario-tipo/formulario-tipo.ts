@@ -26,7 +26,16 @@ export class FormularioTipoComponent implements OnInit {
   loading = signal(false);
   error = signal('');
 
+  returnToRecurso = signal(false);
+  recursoIdRetorno = signal<string | null>(null);
+
   ngOnInit(): void {
+    this.returnToRecurso.set(localStorage.getItem('returnToRecurso') === 'true');
+    const savedRecursoId = localStorage.getItem('recursoId');
+    if (savedRecursoId) {
+      this.recursoIdRetorno.set(savedRecursoId);
+    }
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.tipoId.set(id);
@@ -135,8 +144,20 @@ export class FormularioTipoComponent implements OnInit {
       : this.tipoService.create(data);
 
     operacion.subscribe({
-      next: () => {
-        this.router.navigate(['/tipos']);
+      next: (response) => {
+        localStorage.removeItem('returnToRecurso');
+        localStorage.removeItem('recursoId');
+
+        if (this.returnToRecurso()) {
+          if (this.recursoIdRetorno()) {
+            this.router.navigate(['/recursos/editar', this.recursoIdRetorno()]);
+          } else {
+            this.router.navigate(['/recursos/nuevo']);
+          }
+        } else {
+          const id = response.id || this.tipoId();
+          this.router.navigate(['/tipos/detalle', id]);
+        }
       },
       error: (err) => {
         this.loading.set(false);

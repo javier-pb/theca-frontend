@@ -6,6 +6,7 @@ import { By } from '@angular/platform-browser';
 
 import { DetalleTipoComponent } from './detalle-tipo';
 import { TipoService, Tipo } from '../../../core/services/tipo';
+import { RecursoService } from '../../../core/services/recurso';
 import { Component } from '@angular/core';
 
 @Component({ template: '' })
@@ -13,9 +14,11 @@ class DummyComponent {}
 
 // Test unitario para el detalle de un tipo:
 describe('DetalleTipoComponent', () => {
+
   let component: DetalleTipoComponent;
   let fixture: ComponentFixture<DetalleTipoComponent>;
   let tipoService: jasmine.SpyObj<TipoService>;
+  let recursoService: jasmine.SpyObj<RecursoService>;
   let router: Router;
 
   const mockTipo: Tipo = {
@@ -37,8 +40,13 @@ describe('DetalleTipoComponent', () => {
   };
 
   const mockRecursos = [
-    { id: '1', titulo: 'Recurso con PDF' },
-    { id: '2', titulo: 'Otro Recurso' }
+    { id: '1', titulo: 'Recurso con PDF', tipos: [{ id: '1' }] },
+    { id: '2', titulo: 'Recurso con ePub', tipos: [{ id: '2' }] },
+    { id: '3', titulo: 'Recurso sin tipo', tipos: [] }
+  ];
+
+  const mockRecursosFiltrados = [
+    { id: '1', titulo: 'Recurso con PDF', tipos: [{ id: '1' }] }
   ];
 
   const setupComponent = (id: string | null = '1') => {
@@ -55,26 +63,29 @@ describe('DetalleTipoComponent', () => {
 
   beforeEach(async () => {
     tipoService = jasmine.createSpyObj('TipoService', [
-      'getById', 'getRecursosAsociados', 'delete'
+      'getById', 'delete'
     ]);
+    recursoService = jasmine.createSpyObj('RecursoService', ['getAll']);
 
     await TestBed.configureTestingModule({
       imports: [
         DetalleTipoComponent,
         RouterTestingModule.withRoutes([
-          { path: 'tipos', component: DummyComponent }
+          { path: 'tipos', component: DummyComponent },
+          { path: 'recursos/detalle/1', component: DummyComponent }
         ])
       ],
       providers: [
-        { provide: TipoService, useValue: tipoService }
+        { provide: TipoService, useValue: tipoService },
+        { provide: RecursoService, useValue: recursoService }
       ]
     }).compileComponents();
   });
 
   afterEach(() => {
     tipoService.getById.calls.reset();
-    tipoService.getRecursosAsociados.calls.reset();
     tipoService.delete.calls.reset();
+    recursoService.getAll.calls.reset();
   });
 
   describe('Component Creation with valid ID', () => {
@@ -82,7 +93,7 @@ describe('DetalleTipoComponent', () => {
 
     beforeEach(() => {
       tipoService.getById.and.returnValue(of(mockTipo));
-      tipoService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
 
       const mockActivatedRoute = {
         params: of({ id: '1' })
@@ -106,7 +117,7 @@ describe('DetalleTipoComponent', () => {
   describe('Data Loading', () => {
     beforeEach(() => {
       tipoService.getById.and.returnValue(of(mockTipo));
-      tipoService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       setupComponent('1');
       fixture.detectChanges();
     });
@@ -119,9 +130,54 @@ describe('DetalleTipoComponent', () => {
     });
 
     it('should load recursos asociados successfully', () => {
-      expect(tipoService.getRecursosAsociados).toHaveBeenCalledWith('1');
-      expect(component.recursos().length).toBe(2);
+      expect(recursoService.getAll).toHaveBeenCalled();
+      expect(component.recursos().length).toBe(1);
       expect(component.recursos()[0].titulo).toBe('Recurso con PDF');
+    });
+  });
+
+  describe('cargarRecursosAsociados', () => {
+    beforeEach(() => {
+      tipoService.getById.and.returnValue(of(mockTipo));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
+      setupComponent('1');
+      fixture.detectChanges();
+    });
+
+    it('should filter recursos by tipoId', () => {
+      recursoService.getAll.and.returnValue(of(mockRecursos));
+      component.cargarRecursosAsociados('1');
+
+      expect(component.recursos().length).toBe(1);
+      expect(component.recursos()[0].titulo).toBe('Recurso con PDF');
+    });
+
+    it('should handle resources with tipos as objects with _id', () => {
+      const recursosConId = [
+        { id: '1', titulo: 'Recurso 1', tipos: [{ _id: '1' }] },
+        { id: '2', titulo: 'Recurso 2', tipos: [{ _id: '2' }] }
+      ];
+      recursoService.getAll.and.returnValue(of(recursosConId));
+      component.cargarRecursosAsociados('1');
+
+      expect(component.recursos().length).toBe(1);
+      expect(component.recursos()[0].titulo).toBe('Recurso 1');
+    });
+
+    it('should return empty array when no recursos match', () => {
+      recursoService.getAll.and.returnValue(of(mockRecursos));
+      component.cargarRecursosAsociados('999');
+
+      expect(component.recursos().length).toBe(0);
+    });
+
+    it('should handle error when loading recursos', () => {
+      recursoService.getAll.and.returnValue(throwError(() => new Error('Error')));
+      const consoleSpy = spyOn(console, 'error');
+      component.cargarRecursosAsociados('1');
+
+      expect(consoleSpy).toHaveBeenCalled();
+      expect(component.recursos()).toEqual([]);
     });
   });
 
@@ -148,21 +204,12 @@ describe('DetalleTipoComponent', () => {
       expect(component.loading()).toBe(false);
       expect(component.tipo()).toBeNull();
     });
-
-    it('should handle error when loading recursos fails', () => {
-      tipoService.getById.and.returnValue(of(mockTipo));
-      tipoService.getRecursosAsociados.and.returnValue(throwError(() => new Error('Error')));
-      setupComponent('1');
-      fixture.detectChanges();
-
-      expect(component.recursos()).toEqual([]);
-    });
   });
 
   describe('getImagenUrl', () => {
     beforeEach(() => {
       tipoService.getById.and.returnValue(of(mockTipo));
-      tipoService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       setupComponent('1');
       fixture.detectChanges();
     });
@@ -200,10 +247,25 @@ describe('DetalleTipoComponent', () => {
     });
   });
 
+  describe('irADetalleRecurso', () => {
+    beforeEach(() => {
+      tipoService.getById.and.returnValue(of(mockTipo));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
+      setupComponent('1');
+      fixture.detectChanges();
+    });
+
+    it('should navigate to recurso detalle', () => {
+      spyOn(router, 'navigate');
+      component.irADetalleRecurso('1');
+      expect(router.navigate).toHaveBeenCalledWith(['/recursos/detalle', '1']);
+    });
+  });
+
   describe('Delete functionality', () => {
     beforeEach(() => {
       tipoService.getById.and.returnValue(of(mockTipo));
-      tipoService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       setupComponent('1');
       fixture.detectChanges();
     });
@@ -267,7 +329,7 @@ describe('DetalleTipoComponent', () => {
   describe('ngOnDestroy', () => {
     beforeEach(() => {
       tipoService.getById.and.returnValue(of(mockTipo));
-      tipoService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       setupComponent('1');
       fixture.detectChanges();
     });
@@ -282,7 +344,7 @@ describe('DetalleTipoComponent', () => {
   describe('Template rendering', () => {
     beforeEach(() => {
       tipoService.getById.and.returnValue(of(mockTipo));
-      tipoService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       setupComponent('1');
       fixture.detectChanges();
     });
@@ -300,19 +362,18 @@ describe('DetalleTipoComponent', () => {
 
     it('should display number of recursos', () => {
       const numeroElement = fixture.debugElement.nativeElement.querySelector('.info-group:nth-child(3) .info-value');
-      expect(numeroElement.textContent).toContain('2');
+      expect(numeroElement.textContent).toContain('1');
     });
 
-    it('should display recursos list', () => {
+    it('should display recursos inline', () => {
       const recursosList = fixture.debugElement.nativeElement.querySelectorAll('.recurso-link');
-      expect(recursosList.length).toBe(2);
+      expect(recursosList.length).toBe(1);
       expect(recursosList[0].textContent).toContain('Recurso con PDF');
     });
 
     it('should render editar button', () => {
       const editarBtn = fixture.debugElement.query(By.css('.btn-editar'));
       expect(editarBtn).toBeTruthy();
-      expect(editarBtn.nativeElement).toBeTruthy();
     });
 
     it('should render eliminar button', () => {
@@ -342,7 +403,7 @@ describe('DetalleTipoComponent', () => {
   describe('Modal template', () => {
     beforeEach(() => {
       tipoService.getById.and.returnValue(of(mockTipo));
-      tipoService.getRecursosAsociados.and.returnValue(of(mockRecursos));
+      recursoService.getAll.and.returnValue(of(mockRecursos));
       setupComponent('1');
       fixture.detectChanges();
     });

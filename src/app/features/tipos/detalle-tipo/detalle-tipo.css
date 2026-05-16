@@ -81,12 +81,14 @@
 .recursos-lista {
   margin: 0;
   padding-left: 1.5rem;
+  list-style: disc;
 }
 
 .recurso-link {
   cursor: pointer;
-  color: #5980a6;
+  color: #2c3e50;
   margin: 0.25rem 0;
+  transition: color 0.2s;
 }
 
 .recurso-link:hover {

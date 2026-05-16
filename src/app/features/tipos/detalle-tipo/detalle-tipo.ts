@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { TipoService, Tipo } from '../../../core/services/tipo';
+import { RecursoService } from '../../../core/services/recurso';
 
 @Component({
   selector: 'app-detalle-tipo',
@@ -15,6 +16,7 @@ import { TipoService, Tipo } from '../../../core/services/tipo';
 export class DetalleTipoComponent implements OnInit, OnDestroy {
 
   private tipoService = inject(TipoService);
+  private recursoService = inject(RecursoService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -49,7 +51,7 @@ export class DetalleTipoComponent implements OnInit, OnDestroy {
     this.tipoService.getById(id).subscribe({
       next: (data) => {
         this.tipo.set(data);
-        this.cargarRecursos(id);
+        this.cargarRecursosAsociados(id);
         this.loading.set(false);
       },
       error: () => {
@@ -59,13 +61,17 @@ export class DetalleTipoComponent implements OnInit, OnDestroy {
     });
   }
 
-  cargarRecursos(id: string): void {
-    this.tipoService.getRecursosAsociados(id).subscribe({
-      next: (data) => {
-        this.recursos.set(data);
+  cargarRecursosAsociados(tipoId: string): void {
+    this.recursoService.getAll().subscribe({
+      next: (recursos) => {
+        const filtrados = recursos.filter(recurso =>
+          recurso.tipos && Array.isArray(recurso.tipos) &&
+          recurso.tipos.some((t: any) => (t.id || t._id) === tipoId)
+        );
+        this.recursos.set(filtrados);
       },
       error: () => {
-        console.error('Error al cargar recursos asociados');
+        console.error('Error al cargar recursos asociados al tipo');
         this.recursos.set([]);
       }
     });
@@ -103,6 +109,10 @@ export class DetalleTipoComponent implements OnInit, OnDestroy {
     }
 
     return '';
+  }
+
+  irADetalleRecurso(id: string): void {
+    this.router.navigate(['/recursos/detalle', id]);
   }
 
   confirmarEliminar(): void {
