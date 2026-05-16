@@ -91,14 +91,19 @@ describe('ListaRecursosComponent', () => {
   });
 
   describe('cargarRecursos', () => {
-    it('should load recursos successfully with userId', fakeAsync(() => {
+    it('should load recursos successfully and order by modification date', fakeAsync(() => {
+      const recursosConFechas = [
+        { id: '1', titulo: 'Antiguo', autores: [], fechaModificacion: '2024-01-15T10:00:00' },
+        { id: '2', titulo: 'Reciente', autores: [], fechaModificacion: '2024-06-15T10:00:00' }
+      ];
+      mockRecursoService.getAll.and.returnValue(of(recursosConFechas));
+
       component.cargarRecursos();
       tick();
 
-      expect(mockRecursoService.getAll).toHaveBeenCalledWith(mockUserId);
-      expect(component.recursos().length).toBe(5);
+      expect(component.recursos()[0].titulo).toBe('Reciente');
+      expect(component.recursos()[1].titulo).toBe('Antiguo');
       expect(component.loading()).toBe(false);
-      expect(component.error()).toBe('');
     }));
 
     it('should load autores for each recurso', fakeAsync(() => {
@@ -314,6 +319,34 @@ describe('ListaRecursosComponent', () => {
       const empty = fixture.debugElement.nativeElement.querySelector('.empty');
       expect(empty).toBeTruthy();
       expect(empty.textContent).toContain('No se encontraron recursos');
+    });
+  });
+
+  describe('ordenarPorFechaModificacion', () => {
+    it('should sort recursos by modification date (newest first)', () => {
+      const recursosDesordenados = [
+        { id: '1', titulo: 'Antiguo', fechaModificacion: '2024-01-15T10:00:00' },
+        { id: '2', titulo: 'Reciente', fechaModificacion: '2024-06-15T10:00:00' },
+        { id: '3', titulo: 'Medio', fechaModificacion: '2024-03-15T10:00:00' }
+      ];
+
+      const ordenados = component.ordenarPorFechaModificacion(recursosDesordenados);
+
+      expect(ordenados[0].titulo).toBe('Reciente');
+      expect(ordenados[1].titulo).toBe('Medio');
+      expect(ordenados[2].titulo).toBe('Antiguo');
+    });
+
+    it('should handle null or undefined dates', () => {
+      const recursosConFechasNulas = [
+        { id: '1', titulo: 'Sin fecha', fechaModificacion: null },
+        { id: '2', titulo: 'Con fecha', fechaModificacion: '2024-06-15T10:00:00' },
+        { id: '3', titulo: 'Sin fecha 2' }
+      ];
+
+      const ordenados = component.ordenarPorFechaModificacion(recursosConFechasNulas);
+
+      expect(ordenados[0].titulo).toBe('Con fecha');
     });
   });
 

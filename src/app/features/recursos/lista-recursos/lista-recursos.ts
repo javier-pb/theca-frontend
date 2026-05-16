@@ -73,7 +73,8 @@ export class ListaRecursosComponent implements OnInit {
           };
         }));
 
-        this.recursos.set(recursosConAutores);
+        const recursosOrdenados = this.ordenarPorFechaModificacion(recursosConAutores);
+        this.recursos.set(recursosOrdenados);
         this.filtrarRecursos();
         this.loading.set(false);
       },
@@ -82,6 +83,14 @@ export class ListaRecursosComponent implements OnInit {
         this.error.set('Error al cargar los recursos');
         this.loading.set(false);
       }
+    });
+  }
+
+  ordenarPorFechaModificacion(recursos: any[]): any[] {
+    return [...recursos].sort((a, b) => {
+      const fechaA = a.fechaModificacion ? new Date(a.fechaModificacion).getTime() : 0;
+      const fechaB = b.fechaModificacion ? new Date(b.fechaModificacion).getTime() : 0;
+      return fechaB - fechaA;
     });
   }
 
