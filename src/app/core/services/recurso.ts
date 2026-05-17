@@ -31,8 +31,12 @@ export class RecursoService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-  search(filtros: any): Observable<any[]> {
-    return this.http.post<any[]>(`${this.apiUrl}/buscar`, filtros);
+  search(filtros: any, usuarioId?: string): Observable<any[]> {
+    let url = `${this.apiUrl}/buscar`;
+    if (usuarioId) {
+      url += `?usuarioId=${usuarioId}`;
+    }
+    return this.http.post<any[]>(url, filtros);
   }
 
 }

@@ -1,0 +1,125 @@
+.busqueda-avanzada-container {
+  padding: 2rem;
+  background-color: transparent;
+  min-height: 80vh;
+}
+
+.busqueda-avanzada-content {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.page-title {
+  text-align: center;
+  color: #5980a6;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  color: #5980a6;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: none;
+  background-color: #DEEAED;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: #2c3e50;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  background-color: #e8f1f5;
+  box-shadow: 0 0 0 2px #5980a6;
+}
+
+.form-group input[type="date"] {
+  appearance: none;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.btn-limpiar-filtros {
+  padding: 0.7rem 1.5rem;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-limpiar-filtros:hover {
+  background-color: #7f8c8d;
+}
+
+.btn-buscar {
+  padding: 0.7rem 2rem;
+  background-color: #5980a6;
+  color: white;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-buscar:hover:not(:disabled) {
+  background-color: #4A6875;
+}
+
+.btn-buscar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive: */
+@media (max-width: 768px) {
+  .busqueda-avanzada-container {
+    padding: 1rem;
+  }
+
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .btn-limpiar-filtros,
+  .btn-buscar {
+    flex: 1;
+  }
+}

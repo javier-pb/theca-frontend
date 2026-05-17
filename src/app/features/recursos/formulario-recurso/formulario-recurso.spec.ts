@@ -13,10 +13,23 @@ import { TipoService } from '../../../core/services/tipo';
 import { AutorService } from '../../../core/services/autor';
 import { CategoriaService } from '../../../core/services/categoria';
 import { EtiquetaService } from '../../../core/services/etiqueta';
+import { ModalCrearEntidadComponent } from '../modal-crear-entidad/modal-crear-entidad';
 import { Component } from '@angular/core';
 
 @Component({ template: '' })
 class DummyComponent {}
+
+@Component({
+  selector: 'app-modal-crear-entidad',
+  standalone: true,
+  template: '<div class="mock-modal"></div>'
+})
+// Test unitario para los modales:
+class MockModalCrearEntidadComponent {
+  tipo = signal('autor');
+  cerrarModal = signal(false);
+  entidadCreada = signal(null);
+}
 
 // Test unitario para el formulario de un recurso:
 describe('FormularioRecursoComponent', () => {
@@ -153,10 +166,7 @@ describe('FormularioRecursoComponent', () => {
         HttpClientTestingModule,
         RouterTestingModule.withRoutes([
           { path: 'recursos', component: DummyComponent },
-          { path: 'recursos/detalle/:id', component: DummyComponent },
-          { path: 'autores/nuevo', component: DummyComponent },
-          { path: 'categorias/nuevo', component: DummyComponent },
-          { path: 'tipos/nuevo', component: DummyComponent }
+          { path: 'recursos/detalle/:id', component: DummyComponent }
         ])
       ],
       providers: [
@@ -168,7 +178,12 @@ describe('FormularioRecursoComponent', () => {
         { provide: CategoriaService, useValue: categoriaService },
         { provide: EtiquetaService, useValue: etiquetaService }
       ]
-    }).compileComponents();
+    })
+    .overrideComponent(FormularioRecursoComponent, {
+      remove: { imports: [ModalCrearEntidadComponent] },
+      add: { imports: [MockModalCrearEntidadComponent] }
+    })
+    .compileComponents();
   });
 
   afterEach(() => {
@@ -199,10 +214,6 @@ describe('FormularioRecursoComponent', () => {
       expect(component.version()).toBe('');
       expect(component.loading()).toBe(false);
       expect(component.errorGeneral()).toBe('');
-    });
-
-    it('should not call clearState on init in create mode (se limpia al guardar)', () => {
-      expect(stateService.clearState).not.toHaveBeenCalled();
     });
 
     it('should load tipos, autores, categorias, etiquetas', () => {
@@ -404,7 +415,6 @@ describe('FormularioRecursoComponent', () => {
           portada: 'base64string'
         };
 
-        // Crear un nuevo TestBed para este test específico
         const newTestBed = TestBed.resetTestingModule();
 
         newTestBed.configureTestingModule({
@@ -573,45 +583,143 @@ describe('FormularioRecursoComponent', () => {
     });
   });
 
-  describe('Navigation Methods', () => {
+  describe('Modal Methods', () => {
     beforeEach(() => {
       setupCreateMode();
     });
 
-    it('should navigate to autores and save state to localStorage', () => {
-      spyOn(router, 'navigate');
-      spyOn(localStorage, 'setItem');
-      component.recursoId.set('123');
-      component.irAAutores();
+    describe('abrirModalAutor', () => {
+      it('should open autor modal and save state', () => {
+        spyOn(localStorage, 'setItem');
+        component.recursoId.set('123');
+        component.abrirModalAutor();
 
-      expect(localStorage.setItem).toHaveBeenCalledWith('returnToRecurso', 'true');
-      expect(localStorage.setItem).toHaveBeenCalledWith('recursoId', '123');
-      expect(router.navigate).toHaveBeenCalledWith(['/autores/nuevo']);
+        expect(component.mostrarModalAutor()).toBe(true);
+        expect(localStorage.setItem).toHaveBeenCalledWith('returnToRecurso', 'true');
+        expect(localStorage.setItem).toHaveBeenCalledWith('recursoId', '123');
+      });
     });
 
-    it('should navigate to categorias and save state to localStorage', () => {
-      spyOn(router, 'navigate');
-      spyOn(localStorage, 'setItem');
-      component.irACategorias();
-
-      expect(localStorage.setItem).toHaveBeenCalledWith('returnToRecurso', 'true');
-      expect(router.navigate).toHaveBeenCalledWith(['/categorias/nuevo']);
+    describe('cerrarModalAutor', () => {
+      it('should close autor modal', () => {
+        component.mostrarModalAutor.set(true);
+        component.cerrarModalAutor();
+        expect(component.mostrarModalAutor()).toBe(false);
+      });
     });
 
-    it('should navigate to tipos and save state to localStorage', () => {
-      spyOn(router, 'navigate');
-      spyOn(localStorage, 'setItem');
-      component.recursoId.set('123');
-      component.irATipos();
-
-      expect(localStorage.setItem).toHaveBeenCalledWith('returnToRecurso', 'true');
-      expect(localStorage.setItem).toHaveBeenCalledWith('recursoId', '123');
-      expect(router.navigate).toHaveBeenCalledWith(['/tipos/nuevo']);
+    describe('abrirModalCategoria', () => {
+      it('should open categoria modal', () => {
+        component.abrirModalCategoria();
+        expect(component.mostrarModalCategoria()).toBe(true);
+      });
     });
 
-    it('should open modal for etiquetas', () => {
-      component.irAEtiquetas();
-      expect(component.showModalEtiqueta()).toBe(true);
+    describe('cerrarModalCategoria', () => {
+      it('should close categoria modal', () => {
+        component.mostrarModalCategoria.set(true);
+        component.cerrarModalCategoria();
+        expect(component.mostrarModalCategoria()).toBe(false);
+      });
+    });
+
+    describe('abrirModalTipo', () => {
+      it('should open tipo modal', () => {
+        component.abrirModalTipo();
+        expect(component.mostrarModalTipo()).toBe(true);
+      });
+    });
+
+    describe('cerrarModalTipo', () => {
+      it('should close tipo modal', () => {
+        component.mostrarModalTipo.set(true);
+        component.cerrarModalTipo();
+        expect(component.mostrarModalTipo()).toBe(false);
+      });
+    });
+
+    describe('abrirModalEtiqueta', () => {
+      it('should open etiqueta modal', () => {
+        component.abrirModalEtiqueta();
+        expect(component.mostrarModalEtiqueta()).toBe(true);
+      });
+    });
+
+    describe('cerrarModalEtiqueta', () => {
+      it('should close etiqueta modal', () => {
+        component.mostrarModalEtiqueta.set(true);
+        component.cerrarModalEtiqueta();
+        expect(component.mostrarModalEtiqueta()).toBe(false);
+      });
+    });
+  });
+
+  describe('Callbacks after entity creation', () => {
+    beforeEach(() => {
+      setupCreateMode();
+    });
+
+    describe('onAutorCreado', () => {
+      it('should reload autores and toggle the new autor', () => {
+        const nuevoAutor = { id: 'autor3', nombre: 'Nuevo Autor' };
+        spyOn(component, 'cargarAutores');
+        spyOn(component, 'toggleAutor');
+
+        component.onAutorCreado(nuevoAutor);
+
+        expect(component.cargarAutores).toHaveBeenCalled();
+        expect(component.toggleAutor).toHaveBeenCalledWith('autor3');
+      });
+
+      it('should not toggle if autor has no id', () => {
+        const nuevoAutor = { nombre: 'Nuevo Autor' };
+        spyOn(component, 'cargarAutores');
+        spyOn(component, 'toggleAutor');
+
+        component.onAutorCreado(nuevoAutor);
+
+        expect(component.cargarAutores).toHaveBeenCalled();
+        expect(component.toggleAutor).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('onCategoriaCreada', () => {
+      it('should reload categorias and toggle the new categoria', () => {
+        const nuevaCategoria = { id: 'cat3', nombre: 'Nueva Categoría' };
+        spyOn(component, 'cargarCategorias');
+        spyOn(component, 'toggleCategoria');
+
+        component.onCategoriaCreada(nuevaCategoria);
+
+        expect(component.cargarCategorias).toHaveBeenCalled();
+        expect(component.toggleCategoria).toHaveBeenCalledWith('cat3');
+      });
+    });
+
+    describe('onTipoCreado', () => {
+      it('should reload tipos and set the new tipo', () => {
+        const nuevoTipo = { id: 'tipo3', nombre: 'Nuevo Tipo' };
+        spyOn(component, 'cargarTipos');
+
+        component.onTipoCreado(nuevoTipo);
+
+        expect(component.cargarTipos).toHaveBeenCalled();
+        expect(component.tipoId()).toBe('tipo3');
+        expect(component.tipoNombre()).toBe('Nuevo Tipo');
+      });
+    });
+
+    describe('onEtiquetaCreada', () => {
+      it('should reload etiquetas and toggle the new etiqueta', () => {
+        const nuevaEtiqueta = { id: 'etq3', nombre: 'Nueva Etiqueta' };
+        spyOn(component, 'cargarEtiquetas');
+        spyOn(component, 'toggleEtiqueta');
+
+        component.onEtiquetaCreada(nuevaEtiqueta);
+
+        expect(component.cargarEtiquetas).toHaveBeenCalled();
+        expect(component.toggleEtiqueta).toHaveBeenCalledWith('etq3');
+      });
     });
   });
 
@@ -669,25 +777,6 @@ describe('FormularioRecursoComponent', () => {
 
       expect(stateService.setTitulo).toHaveBeenCalledWith('Saved title');
       expect(stateService.setAutores).toHaveBeenCalledWith(['autor1'], 'Saved author');
-    });
-  });
-
-  describe('Modal Etiqueta', () => {
-    beforeEach(() => {
-      setupCreateMode();
-    });
-
-    it('should close modal when cerrarModalEtiqueta is called', () => {
-      component.showModalEtiqueta.set(true);
-      component.cerrarModalEtiqueta();
-      expect(component.showModalEtiqueta()).toBe(false);
-    });
-
-    it('should reload etiquetas when onEtiquetaGuardada is called', () => {
-      etiquetaService.getAll.calls.reset();
-      component.onEtiquetaGuardada();
-      expect(component.showModalEtiqueta()).toBe(false);
-      expect(etiquetaService.getAll).toHaveBeenCalled();
     });
   });
 

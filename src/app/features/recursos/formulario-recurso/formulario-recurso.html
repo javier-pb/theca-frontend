@@ -61,7 +61,7 @@
                   </div>
                 }
               </div>
-              <button type="button" class="btn-add-small" (click)="irAAutores()">
+              <button type="button" class="btn-add-small" (click)="abrirModalAutor()">
                 <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add-small">
               </button>
             </div>
@@ -79,7 +79,7 @@
                 <option [value]="tipo.id">{{ tipo.nombre }}</option>
               }
             </select>
-            <button type="button" class="btn-add-small" (click)="irATipos()">
+            <button type="button" class="btn-add-small" (click)="abrirModalTipo()">
               <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add-small">
             </button>
           </div>
@@ -124,7 +124,7 @@
                 </div>
               }
             </div>
-            <button type="button" class="btn-add-small" (click)="irACategorias()">
+            <button type="button" class="btn-add-small" (click)="abrirModalCategoria()">
               <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add-small">
             </button>
           </div>
@@ -152,7 +152,7 @@
                 </div>
               }
             </div>
-            <button type="button" class="btn-add-small" (click)="irAEtiquetas()">
+            <button type="button" class="btn-add-small" (click)="abrirModalEtiqueta()">
               <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add-small">
             </button>
           </div>
@@ -175,12 +175,36 @@
     </form>
   </div>
 
-  <!-- Modal para añadir etiqueta: -->
-  @if (showModalEtiqueta()) {
-    <app-modal-etiqueta
-      modo="crear"
-      (cerrar)="cerrarModalEtiqueta()"
-      (guardado)="onEtiquetaGuardada()">
-    </app-modal-etiqueta>
+  <!-- Modales para crear entidades -->
+  @if (mostrarModalAutor()) {
+    <app-modal-crear-entidad
+      tipo="autor"
+      (cerrarModal)="cerrarModalAutor()"
+      (entidadCreada)="onAutorCreado($event)">
+    </app-modal-crear-entidad>
+  }
+
+  @if (mostrarModalCategoria()) {
+    <app-modal-crear-entidad
+      tipo="categoria"
+      (cerrarModal)="cerrarModalCategoria()"
+      (entidadCreada)="onCategoriaCreada($event)">
+    </app-modal-crear-entidad>
+  }
+
+  @if (mostrarModalTipo()) {
+    <app-modal-crear-entidad
+      tipo="tipo"
+      (cerrarModal)="cerrarModalTipo()"
+      (entidadCreada)="onTipoCreado($event)">
+    </app-modal-crear-entidad>
+  }
+
+  @if (mostrarModalEtiqueta()) {
+    <app-modal-crear-entidad
+      tipo="etiqueta"
+      (cerrarModal)="cerrarModalEtiqueta()"
+      (entidadCreada)="onEtiquetaCreada($event)">
+    </app-modal-crear-entidad>
   }
 </div>

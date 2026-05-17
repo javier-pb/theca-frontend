@@ -9,12 +9,12 @@ import { TipoService, Tipo } from '../../../core/services/tipo';
 import { AutorService, Autor } from '../../../core/services/autor';
 import { CategoriaService, Categoria } from '../../../core/services/categoria';
 import { EtiquetaService, Etiqueta } from '../../../core/services/etiqueta';
-import { ModalEtiquetaComponent } from "../../etiquetas/modal-etiqueta/modal-etiqueta";
+import { ModalCrearEntidadComponent } from '../modal-crear-entidad/modal-crear-entidad';
 
 @Component({
   selector: 'app-formulario-recurso',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ModalEtiquetaComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ModalCrearEntidadComponent],
   templateUrl: './formulario-recurso.html',
   styleUrls: ['./formulario-recurso.css']
 })
@@ -30,7 +30,11 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
   private categoriaService = inject(CategoriaService);
   private etiquetaService = inject(EtiquetaService);
   formState = this.stateService.getState();
-  showModalEtiqueta = signal(false);
+
+  mostrarModalAutor = signal(false);
+  mostrarModalCategoria = signal(false);
+  mostrarModalTipo = signal(false);
+  mostrarModalEtiqueta = signal(false);
 
   titulo = signal('');
   autoresIds = signal<string[]>([]);
@@ -109,7 +113,9 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
 
       this.cargarRecurso();
     } else {
+      this.stateService.clearState();
       const savedState = this.formState();
+
       if (savedState.titulo) {
         this.titulo.set(savedState.titulo);
         this.autoresTexto.set(savedState.autoresTexto);
@@ -163,7 +169,6 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
         const ordenados = [...data].sort((a, b) => a.nombre.localeCompare(b.nombre));
         this.tiposDisponibles.set(ordenados);
       },
-      error: () => console.error('Error al cargar tipos')
     });
   }
 
@@ -173,7 +178,6 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
         const ordenados = [...data].sort((a, b) => a.nombre.localeCompare(b.nombre));
         this.autoresDisponibles.set(ordenados);
       },
-      error: () => console.error('Error al cargar autores')
     });
   }
 
@@ -184,7 +188,6 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
         this.categoriasDisponibles.set(ordenados);
         this.construirJerarquiaCategorias();
       },
-      error: () => console.error('Error al cargar categorías')
     });
   }
 
@@ -271,7 +274,6 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
         const ordenados = [...data].sort((a, b) => a.nombre.localeCompare(b.nombre));
         this.etiquetasDisponibles.set(ordenados);
       },
-      error: () => console.error('Error al cargar etiquetas')
     });
   }
 
@@ -510,16 +512,77 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
   }
 
   irAEtiquetas(): void {
-    this.showModalEtiqueta.set(true);
+    this.mostrarModalEtiqueta.set(true);
   }
 
   onEtiquetaGuardada(): void {
-    this.showModalEtiqueta.set(false);
+    this.mostrarModalEtiqueta.set(false);
     this.cargarEtiquetas();
   }
 
   cerrarModalEtiqueta(): void {
-    this.showModalEtiqueta.set(false);
+    this.mostrarModalEtiqueta.set(false);
+  }
+
+  abrirModalAutor(): void {
+    this.guardarEstadoYRetorno();
+    this.mostrarModalAutor.set(true);
+  }
+
+  cerrarModalAutor(): void {
+    this.mostrarModalAutor.set(false);
+  }
+
+  abrirModalCategoria(): void {
+    this.guardarEstadoYRetorno();
+    this.mostrarModalCategoria.set(true);
+  }
+
+  cerrarModalCategoria(): void {
+    this.mostrarModalCategoria.set(false);
+  }
+
+  abrirModalTipo(): void {
+    this.guardarEstadoYRetorno();
+    this.mostrarModalTipo.set(true);
+  }
+
+  cerrarModalTipo(): void {
+    this.mostrarModalTipo.set(false);
+  }
+
+  abrirModalEtiqueta(): void {
+    this.guardarEstadoYRetorno();
+    this.mostrarModalEtiqueta.set(true);
+  }
+
+  onAutorCreado(autor: any): void {
+    this.cargarAutores();
+    if (autor && autor.id) {
+      this.toggleAutor(autor.id);
+    }
+  }
+
+  onCategoriaCreada(categoria: any): void {
+    this.cargarCategorias();
+    if (categoria && categoria.id) {
+      this.toggleCategoria(categoria.id);
+    }
+  }
+
+  onTipoCreado(tipo: any): void {
+    this.cargarTipos();
+    if (tipo && tipo.id) {
+      this.tipoId.set(tipo.id);
+      this.tipoNombre.set(tipo.nombre);
+    }
+  }
+
+  onEtiquetaCreada(etiqueta: any): void {
+    this.cargarEtiquetas();
+    if (etiqueta && etiqueta.id) {
+      this.toggleEtiqueta(etiqueta.id);
+    }
   }
 
   validarCampos(): boolean {
@@ -585,7 +648,6 @@ export class FormularioRecursoComponent implements OnInit, OnDestroy {
         this.router.navigate(['/recursos/detalle', id]);
       },
       error: (err) => {
-        console.error('Error en la petición:', err);
         this.loading.set(false);
         if (err.error && typeof err.error === 'string') {
           this.errorGeneral.set(err.error);

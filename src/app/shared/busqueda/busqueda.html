@@ -4,11 +4,11 @@
   </button>
   <input
     type="text"
-    [(ngModel)]="terminoBusqueda"
+    [(ngModel)]="termino"
     (keyup.enter)="onBuscar()"
     placeholder="¿Qué quieres buscar?"
     class="search-input">
-  @if (terminoBusqueda()) {
+  @if (termino()) {
     <button class="btn-limpiar" (click)="limpiar()">✕</button>
   }
 </div>

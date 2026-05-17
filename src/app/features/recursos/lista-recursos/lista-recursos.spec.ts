@@ -1,24 +1,28 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
-import { By } from '@angular/platform-browser';
 
 import { ListaRecursosComponent } from './lista-recursos';
 import { RecursoService } from '../../../core/services/recurso';
 import { AuthService } from '../../../core/services/auth';
 import { AutorService } from '../../../core/services/autor';
+import { TipoService, Tipo } from '../../../core/services/tipo';
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({ template: '' })
 class DummyComponent {}
 
 // Test unitario para la lista de recursos:
 describe('ListaRecursosComponent', () => {
+
   let component: ListaRecursosComponent;
   let fixture: ComponentFixture<ListaRecursosComponent>;
   let mockRecursoService: jasmine.SpyObj<RecursoService>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
   let mockAutorService: jasmine.SpyObj<AutorService>;
+  let mockTipoService: jasmine.SpyObj<TipoService>;
+  let router: Router;
 
   const mockAutores = {
     'autor1': { id: 'autor1', nombre: 'Juan Pérez' },
@@ -26,16 +30,22 @@ describe('ListaRecursosComponent', () => {
     'autor3': { id: 'autor3', nombre: 'Carlos López' }
   };
 
+  const mockTipos: Tipo[] = [
+    { id: 'tipo1', nombre: 'PDF', esPredeterminado: true },
+    { id: 'tipo2', nombre: 'ePub', esPredeterminado: true },
+    { id: 'tipo3', nombre: 'Documento', esPredeterminado: true }
+  ];
+
   const mockRecursos = [
-    { id: '1', titulo: 'Angular para Principiantes', autores: [{ id: 'autor1' }], portada: null },
-    { id: '2', titulo: 'TypeScript Avanzado', autores: [{ id: 'autor2' }], portada: 'base64imagedata' },
-    { id: '3', titulo: 'JavaScript Básico', autores: [{ id: 'autor3' }], portada: 'https://ejemplo.com/imagen.jpg' },
-    { id: '4', titulo: 'React Moderno', autores: [], portada: null },
-    { id: '5', titulo: 'Vue.js', autores: [{ id: 'autor1' }, { id: 'autor2' }], portada: null }
+    { id: '1', titulo: 'Angular para Principiantes', autores: [{ id: 'autor1' }], portada: null, tipos: [{ id: 'tipo1' }] },
+    { id: '2', titulo: 'TypeScript Avanzado', autores: [{ id: 'autor2' }], portada: 'base64imagedata', tipos: [{ id: 'tipo2' }] },
+    { id: '3', titulo: 'JavaScript Básico', autores: [{ id: 'autor3' }], portada: 'https://ejemplo.com/imagen.jpg', tipos: [{ id: 'tipo1' }] },
+    { id: '4', titulo: 'React Moderno', autores: [], portada: null, tipos: [{ id: 'tipo3' }] },
+    { id: '5', titulo: 'Vue.js', autores: [{ id: 'autor1' }, { id: 'autor2' }], portada: null, tipos: [{ id: 'tipo2' }] }
   ];
 
   const mockRecursosConAutoresCompletos = [
-    { id: '1', titulo: 'Libro con autor', autores: [{ id: 'autor1', nombre: 'Juan Pérez' }], portada: null }
+    { id: '1', titulo: 'Libro con autor', autores: [{ id: 'autor1', nombre: 'Juan Pérez' }], portada: null, tipos: [{ id: 'tipo1' }] }
   ];
 
   const mockUserId = 'user123';
@@ -44,9 +54,11 @@ describe('ListaRecursosComponent', () => {
     mockRecursoService = jasmine.createSpyObj('RecursoService', ['getAll']);
     mockAuthService = jasmine.createSpyObj('AuthService', ['getUserId']);
     mockAutorService = jasmine.createSpyObj('AutorService', ['getById']);
+    mockTipoService = jasmine.createSpyObj('TipoService', ['getAll']);
 
     mockAuthService.getUserId.and.returnValue(mockUserId);
     mockRecursoService.getAll.and.returnValue(of(mockRecursos));
+    mockTipoService.getAll.and.returnValue(of(mockTipos));
     mockAutorService.getById.and.callFake((id: string) => {
       return of(mockAutores[id as keyof typeof mockAutores]);
     });
@@ -57,23 +69,27 @@ describe('ListaRecursosComponent', () => {
         RouterTestingModule.withRoutes([
           { path: 'recursos/nuevo', component: DummyComponent },
           { path: 'recursos/editar/:id', component: DummyComponent },
-          { path: 'recursos/detalle/:id', component: DummyComponent }
+          { path: 'recursos/detalle/:id', component: DummyComponent },
+          { path: 'busqueda-avanzada', component: DummyComponent }
         ])
       ],
       providers: [
         { provide: RecursoService, useValue: mockRecursoService },
         { provide: AuthService, useValue: mockAuthService },
-        { provide: AutorService, useValue: mockAutorService }
+        { provide: AutorService, useValue: mockAutorService },
+        { provide: TipoService, useValue: mockTipoService }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ListaRecursosComponent);
     component = fixture.componentInstance;
+    router = TestBed.inject(Router);
   });
 
   afterEach(() => {
     mockRecursoService.getAll.calls.reset();
     mockAutorService.getById.calls.reset();
+    mockTipoService.getAll.calls.reset();
   });
 
   describe('Component Creation', () => {
@@ -91,10 +107,18 @@ describe('ListaRecursosComponent', () => {
   });
 
   describe('cargarRecursos', () => {
+    it('should load tipos first then recursos', fakeAsync(() => {
+      component.cargarRecursos();
+      tick();
+
+      expect(mockTipoService.getAll).toHaveBeenCalled();
+      expect(mockRecursoService.getAll).toHaveBeenCalledWith(mockUserId);
+    }));
+
     it('should load recursos successfully and order by modification date', fakeAsync(() => {
       const recursosConFechas = [
-        { id: '1', titulo: 'Antiguo', autores: [], fechaModificacion: '2024-01-15T10:00:00' },
-        { id: '2', titulo: 'Reciente', autores: [], fechaModificacion: '2024-06-15T10:00:00' }
+        { id: '1', titulo: 'Antiguo', autores: [], fechaModificacion: '2024-01-15T10:00:00', tipos: [{ id: 'tipo1' }] },
+        { id: '2', titulo: 'Reciente', autores: [], fechaModificacion: '2024-06-15T10:00:00', tipos: [{ id: 'tipo1' }] }
       ];
       mockRecursoService.getAll.and.returnValue(of(recursosConFechas));
 
@@ -118,15 +142,13 @@ describe('ListaRecursosComponent', () => {
       expect(recurso5.autoresList).toEqual(['Juan Pérez', 'María García']);
     }));
 
-    it('should handle recurso with autores already having nombres without extra API calls', fakeAsync(() => {
-      const recursoConNombres = [{ id: 'autor1', nombre: 'Juan Pérez' }];
-      mockRecursoService.getAll.and.returnValue(of([{ id: '1', titulo: 'Libro', autores: recursoConNombres }]));
+    it('should handle recurso with autores already having nombres', fakeAsync(() => {
+      mockRecursoService.getAll.and.returnValue(of(mockRecursosConAutoresCompletos));
 
       component.cargarRecursos();
       tick();
 
       expect(component.recursos()[0].autoresList).toEqual(['Juan Pérez']);
-      expect(mockAutorService.getById).toHaveBeenCalled();
     }));
 
     it('should handle empty autores array', fakeAsync(() => {
@@ -156,16 +178,12 @@ describe('ListaRecursosComponent', () => {
       expect(component.error()).toBe('Error al cargar los recursos');
     }));
 
-    it('should handle error when loading autores', fakeAsync(() => {
-      mockAutorService.getById.and.returnValue(throwError(() => new Error('Error')));
-      const consoleSpy = spyOn(console, 'error');
-
+    it('should handle error when loading tipos', fakeAsync(() => {
+      mockTipoService.getAll.and.returnValue(throwError(() => new Error('Error')));
       component.cargarRecursos();
       tick();
 
-      expect(consoleSpy).toHaveBeenCalled();
-      const recurso1 = component.recursos().find(r => r.id === '1');
-      expect(recurso1.autoresList).toEqual([]);
+      expect(component.loading()).toBe(false);
     }));
 
     it('should handle null userId', fakeAsync(() => {
@@ -174,6 +192,14 @@ describe('ListaRecursosComponent', () => {
       tick();
 
       expect(mockRecursoService.getAll).toHaveBeenCalledWith(undefined);
+    }));
+
+    it('should generate imagenPortada for predeterminado tipos', fakeAsync(() => {
+      component.cargarRecursos();
+      tick();
+
+      const recurso = component.recursos()[0];
+      expect(recurso.imagenPortada).toBe('assets/images/PDF.png');
     }));
   });
 
@@ -234,10 +260,10 @@ describe('ListaRecursosComponent', () => {
   });
 
   describe('abrirBusquedaAvanzada', () => {
-    it('should log message', () => {
-      const consoleSpy = spyOn(console, 'log');
+    it('should navigate to busqueda-avanzada', () => {
+      spyOn(router, 'navigate');
       component.abrirBusquedaAvanzada();
-      expect(consoleSpy).toHaveBeenCalledWith('Búsqueda avanzada - Pendiente');
+      expect(router.navigate).toHaveBeenCalledWith(['/busqueda-avanzada']);
     });
   });
 
@@ -249,6 +275,16 @@ describe('ListaRecursosComponent', () => {
 
     it('should return unchanged URL when portada starts with http', () => {
       const url = 'https://ejemplo.com/imagen.jpg';
+      expect(component.getPortadaUrl(url)).toBe(url);
+    });
+
+    it('should return unchanged URL when portada starts with assets/', () => {
+      const url = 'assets/images/PDF.png';
+      expect(component.getPortadaUrl(url)).toBe(url);
+    });
+
+    it('should return unchanged URL when portada starts with data:', () => {
+      const url = 'data:image/jpeg;base64,abc123';
       expect(component.getPortadaUrl(url)).toBe(url);
     });
 

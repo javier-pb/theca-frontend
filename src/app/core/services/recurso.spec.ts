@@ -124,7 +124,7 @@ describe('RecursoService', () => {
   });
 
   describe('search', () => {
-    it('should call POST /api/recursos/buscar with filters', () => {
+    it('should call POST /api/recursos/buscar with filters only when no usuarioId provided', () => {
       const filters = { titulo: 'Java', tipo: 'libro' };
       const mockResults = [
         { id: '1', titulo: 'Java para principiantes' },
@@ -134,6 +134,37 @@ describe('RecursoService', () => {
       service.search(filters).subscribe(data => {
         expect(data).toEqual(mockResults);
         expect(data.length).toBe(2);
+      });
+
+      const req = httpMock.expectOne('/api/recursos/buscar');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(filters);
+      expect(req.request.urlWithParams).not.toContain('usuarioId');
+      req.flush(mockResults);
+    });
+
+    it('should call POST /api/recursos/buscar with usuarioId as query param when provided', () => {
+      const filters = { titulo: 'Angular' };
+      const usuarioId = 'user123';
+      const mockResults = [{ id: '1', titulo: 'Angular para principiantes' }];
+
+      service.search(filters, usuarioId).subscribe(data => {
+        expect(data).toEqual(mockResults);
+      });
+
+      const req = httpMock.expectOne('/api/recursos/buscar?usuarioId=user123');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(filters);
+      expect(req.request.urlWithParams).toContain('usuarioId=user123');
+      req.flush(mockResults);
+    });
+
+    it('should call POST /api/recursos/buscar with empty filters', () => {
+      const filters = {};
+      const mockResults: any[] = [];  // 🔴 Añadir tipo explícito
+
+      service.search(filters).subscribe(data => {
+        expect(data).toEqual(mockResults);
       });
 
       const req = httpMock.expectOne('/api/recursos/buscar');

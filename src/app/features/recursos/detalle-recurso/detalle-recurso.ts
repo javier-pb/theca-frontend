@@ -25,6 +25,7 @@ interface CategoriaJerarquica {
 })
 // Compponente para el detalle de un recurso:
 export class DetalleRecursoComponent implements OnInit {
+
   recurso = signal<any>(null);
   loading = signal(true);
   error = signal('');
@@ -89,10 +90,11 @@ export class DetalleRecursoComponent implements OnInit {
       this.autoresList.set(ordenados);
     } else {
       const ids = autores.map((a: any) => a.id || a._id);
-      const peticiones = ids.map((id: string) => this.autorService.getById(id));
+      const peticiones = ids.map((id: string) => this.autorService.getById(id).toPromise().catch(() => null));
 
-      Promise.all(peticiones.map(p => p.toPromise())).then((resultados: any[]) => {
-        const ordenados = resultados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+      Promise.all(peticiones).then((resultados: any[]) => {
+        const autoresValidos = resultados.filter(autor => autor !== null);
+        const ordenados = autoresValidos.sort((a, b) => a.nombre.localeCompare(b.nombre));
         this.autoresList.set(ordenados);
       }).catch(() => {
         this.autoresList.set([]);
@@ -112,12 +114,11 @@ export class DetalleRecursoComponent implements OnInit {
       this.tipoNombre.set(tipo.nombre);
       this.tipoId.set(tipo.id || tipo._id);
     } else if (tipo && tipo.id) {
-      this.tipoService.getById(tipo.id).subscribe({
-        next: (data: any) => {
+      this.tipoService.getById(tipo.id).toPromise().catch(() => null).then((data: any) => {
+        if (data) {
           this.tipoNombre.set(data.nombre);
           this.tipoId.set(data.id);
-        },
-        error: () => {
+        } else {
           this.tipoNombre.set('');
           this.tipoId.set('');
         }
@@ -167,7 +168,6 @@ export class DetalleRecursoComponent implements OnInit {
         this.categoriasList.set(categoriasFiltradas);
       },
       error: () => {
-        console.error('Error al cargar jerarquía de categorías');
         const simple = categorias.map((c: any) => ({
           id: c.id || c._id,
           displayNombre: c.nombre || '',
@@ -226,10 +226,11 @@ export class DetalleRecursoComponent implements OnInit {
       this.etiquetasList.set(ordenados);
     } else {
       const ids = etiquetas.map((e: any) => e.id || e._id);
-      const peticiones = ids.map((id: string) => this.etiquetaService.getById(id));
+      const peticiones = ids.map((id: string) => this.etiquetaService.getById(id).toPromise().catch(() => null));
 
-      Promise.all(peticiones.map(p => p.toPromise())).then((resultados: any[]) => {
-        const ordenados = resultados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+      Promise.all(peticiones).then((resultados: any[]) => {
+        const etiquetasValidas = resultados.filter(etiqueta => etiqueta !== null);
+        const ordenados = etiquetasValidas.sort((a, b) => a.nombre.localeCompare(b.nombre));
         this.etiquetasList.set(ordenados);
       }).catch(() => {
         this.etiquetasList.set([]);

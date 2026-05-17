@@ -52,7 +52,8 @@ describe('ListaAutoresComponent', () => {
         ListaAutoresComponent,
         RouterTestingModule.withRoutes([
           { path: 'autores/detalle/1', component: DummyComponent },
-          { path: 'autores/detalle/anonimo', component: DummyComponent }
+          { path: 'autores/detalle/anonimo', component: DummyComponent },
+          { path: 'busqueda-avanzada/autores', component: DummyComponent }
         ])
       ],
       providers: [
@@ -251,10 +252,10 @@ describe('ListaAutoresComponent', () => {
   });
 
   describe('abrirBusquedaAvanzada', () => {
-    it('should log message', () => {
-      const consoleSpy = spyOn(console, 'log');
+    it('should navigate to busqueda-avanzada/autores', () => {
+      spyOn(router, 'navigate');
       component.abrirBusquedaAvanzada();
-      expect(consoleSpy).toHaveBeenCalledWith('Búsqueda avanzada - Pendiente de implementar');
+      expect(router.navigate).toHaveBeenCalledWith(['/busqueda-avanzada/autores']);
     });
   });
 
@@ -319,7 +320,7 @@ describe('ListaAutoresComponent', () => {
     it('should show empty state when no autores', () => {
       component.autores.set([]);
       component.autoresFiltrados.set([]);
-      component.mostrarAnonimo.set(false);  // Asegurar que anonimo no se muestra
+      component.mostrarAnonimo.set(false);
       component.loading.set(false);
       component.error.set('');
       fixture.detectChanges();

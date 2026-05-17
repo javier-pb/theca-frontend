@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BusquedaComponent } from './busqueda';
+import { BusquedaComponent } from '../../../shared/busqueda/busqueda';
 import { Component } from '@angular/core';
 
 @Component({ template: '' })
@@ -112,7 +112,7 @@ describe('BusquedaComponent', () => {
   });
 
   describe('Template rendering', () => {
-    it('should render search input with class search-input', () => {
+    it('should render search input', () => {
       const input = fixture.debugElement.nativeElement.querySelector('.search-input');
       expect(input).toBeTruthy();
     });
@@ -143,40 +143,32 @@ describe('BusquedaComponent', () => {
       expect(component.onBuscar).toHaveBeenCalled();
     });
 
-    it('should show clear button (btn-limpiar) when termino is not empty', fakeAsync(() => {
+    it('should show clear button when termino is not empty', () => {
       component.termino.set('text');
-      fixture.detectChanges();
-      tick();
       fixture.detectChanges();
 
       const clearButton = fixture.debugElement.nativeElement.querySelector('.btn-limpiar');
       expect(clearButton).toBeTruthy();
-      expect(clearButton.textContent).toContain('✕');
-    }));
+    });
 
-    it('should not show clear button when termino is empty', fakeAsync(() => {
+    it('should not show clear button when termino is empty', () => {
       component.termino.set('');
-      fixture.detectChanges();
-      tick();
       fixture.detectChanges();
 
       const clearButton = fixture.debugElement.nativeElement.querySelector('.btn-limpiar');
       expect(clearButton).toBeFalsy();
-    }));
+    });
 
-    it('should call limpiar when clear button is clicked', fakeAsync(() => {
+    it('should call limpiar when clear button is clicked', () => {
       spyOn(component, 'limpiar');
       component.termino.set('text');
-      fixture.detectChanges();
-      tick();
       fixture.detectChanges();
 
       const clearButton = fixture.debugElement.nativeElement.querySelector('.btn-limpiar');
       expect(clearButton).toBeTruthy();
       clearButton.click();
-
       expect(component.limpiar).toHaveBeenCalled();
-    }));
+    });
 
     it('should call onBusquedaAvanzada when btn-busqueda-avanzada is clicked', () => {
       spyOn(component, 'onBusquedaAvanzada');

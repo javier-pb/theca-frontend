@@ -41,15 +41,15 @@
         @for (recurso of recursosFiltrados(); track recurso.id) {
           <div class="recurso-card" [routerLink]="['/recursos/detalle', recurso.id]">
             <div class="card-imagen">
-              @if (recurso.portada) {
-                <img [src]="getPortadaUrl(recurso.portada)" alt="Portada" class="portada-img">
+              @if (recurso.imagenPortada) {
+                <img [src]="getPortadaUrl(recurso.imagenPortada)" alt="Portada" class="portada-img">
               } @else {
                 <img src="assets/images/Recurso (azul).png" alt="Recurso" class="portada-img">
               }
             </div>
             <div class="card-titulo">{{ recurso.titulo }}</div>
             <div class="card-autores">
-              @for (autor of recurso.autoresList; track autor) {
+              @for (autor of recurso.autoresList; track $index) {
                 <div class="card-autor">{{ autor }}</div>
               }
             </div>

@@ -1,6 +1,7 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, signal, output, input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-busqueda',
@@ -9,25 +10,29 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './busqueda.html',
   styleUrls: ['./busqueda.css']
 })
-// Componente para la barra de búsqueda:
+// Componente compartido para la búsqueda:
 export class BusquedaComponent {
+
+  private router = inject(Router);
 
   buscar = output<string>();
   busquedaAvanzada = output<void>();
 
-  terminoBusqueda = signal('');
+  rutaBusquedaAvanzada = input<string>('/busqueda-avanzada');
+
+  termino = signal('');
 
   onBuscar(): void {
-    this.buscar.emit(this.terminoBusqueda());
-  }
-
-  limpiar(): void {
-    this.terminoBusqueda.set('');
-    this.buscar.emit('');
+    this.buscar.emit(this.termino());
   }
 
   onBusquedaAvanzada(): void {
-    this.busquedaAvanzada.emit();
+    this.router.navigate([this.rutaBusquedaAvanzada()]);
+  }
+
+  limpiar(): void {
+    this.termino.set('');
+    this.buscar.emit('');
   }
 
 }

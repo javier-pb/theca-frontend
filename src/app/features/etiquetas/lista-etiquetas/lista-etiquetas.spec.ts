@@ -34,7 +34,8 @@ describe('ListaEtiquetasComponent', () => {
       imports: [
         ListaEtiquetasComponent,
         RouterTestingModule.withRoutes([
-          { path: 'etiquetas/detalle/1', component: DummyComponent }
+          { path: 'etiquetas/detalle/1', component: DummyComponent },
+          { path: 'busqueda-avanzada/etiquetas', component: DummyComponent }
         ])
       ],
       providers: [
@@ -168,10 +169,10 @@ describe('ListaEtiquetasComponent', () => {
   });
 
   describe('abrirBusquedaAvanzada', () => {
-    it('should log message', () => {
-      const consoleSpy = spyOn(console, 'log');
+    it('should navigate to busqueda-avanzada/etiquetas', () => {
+      spyOn(router, 'navigate');
       component.abrirBusquedaAvanzada();
-      expect(consoleSpy).toHaveBeenCalledWith('Búsqueda avanzada - Pendiente de implementar');
+      expect(router.navigate).toHaveBeenCalledWith(['/busqueda-avanzada/etiquetas']);
     });
   });
 

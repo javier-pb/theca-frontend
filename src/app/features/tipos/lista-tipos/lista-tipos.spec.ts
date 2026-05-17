@@ -44,7 +44,10 @@ describe('ListaTiposComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         ListaTiposComponent,
-        RouterTestingModule
+        RouterTestingModule.withRoutes([
+          { path: 'tipos/detalle/1', component: Component },
+          { path: 'busqueda-avanzada/tipos', component: Component }
+        ])
       ],
       providers: [
         { provide: TipoService, useValue: tipoService }
@@ -220,13 +223,14 @@ describe('ListaTiposComponent', () => {
       tipoService.getAll.and.returnValue(of(mockTipos));
       fixture = TestBed.createComponent(ListaTiposComponent);
       component = fixture.componentInstance;
+      router = TestBed.inject(Router);
       fixture.detectChanges();
     });
 
-    it('should log message', () => {
-      const consoleSpy = spyOn(console, 'log');
+    it('should navigate to busqueda-avanzada/tipos', () => {
+      spyOn(router, 'navigate');
       component.abrirBusquedaAvanzada();
-      expect(consoleSpy).toHaveBeenCalledWith('Búsqueda avanzada - Pendiente de implementar');
+      expect(router.navigate).toHaveBeenCalledWith(['/busqueda-avanzada/tipos']);
     });
   });
 
