@@ -1,17 +1,65 @@
-<div class="search-bar">
-  <button class="btn-lupa" (click)="onBuscar()">
-    <img src="assets/images/Lupa.png" alt="Buscar" class="icon-lupa">
-  </button>
-  <input
-    type="text"
-    [(ngModel)]="terminoBusqueda"
-    (keyup.enter)="onBuscar()"
-    placeholder="¿Qué quieres buscar?"
-    class="search-input">
-  @if (terminoBusqueda()) {
-    <button class="btn-limpiar" (click)="limpiar()">✕</button>
+<div class="search-container">
+  <div class="search-bar">
+    <div class="lupa-icon">
+      <img src="assets/images/Lupa.png" alt="Buscar" class="icon-lupa">
+    </div>
+    <input
+      type="text"
+      [(ngModel)]="termino"
+      (keyup.enter)="onBuscar()"
+      (focus)="resultados().length > 0 && mostrarDropdown.set(true)"
+      (blur)="cerrarDropdown()"
+      placeholder="¿Qué quiere buscar?"
+      class="search-input">
+    @if (termino()) {
+      <button class="btn-limpiar" (click)="limpiar()">✕</button>
+    }
+    <button class="btn-busqueda-avanzada" (click)="onBusquedaAvanzada()">
+      Búsqueda avanzada
+    </button>
+  </div>
+
+  <!-- Resultados: -->
+  @if (mostrarDropdown() && (resultados().length > 0 || buscando())) {
+    <div class="search-dropdown">
+      @if (buscando()) {
+        <div class="dropdown-loading">Buscando...</div>
+      } @else {
+        @for (resultado of resultados(); track resultado.id) {
+          <div class="dropdown-item" (click)="seleccionarResultado(resultado)">
+            <div class="dropdown-item-icon">
+              @switch (resultado.tipo) {
+                @case ('recurso') {
+                  @if (resultado.imagen) {
+                    <img [src]="resultado.imagen" alt="Portada" class="item-icon">
+                  } @else {
+                    <img src="assets/images/Recurso (azul).png" alt="Recurso" class="item-icon">
+                  }
+                }
+                @case ('autor') {
+                  <img src="assets/images/Autor (azul).png" alt="Autor" class="item-icon">
+                }
+                @case ('categoria') {
+                  <img src="assets/images/Categoría (azul).png" alt="Categoría" class="item-icon">
+                }
+                @case ('etiqueta') {
+                  <img src="assets/images/Etiqueta (azul).png" alt="Etiqueta" class="item-icon">
+                }
+                @case ('tipo') {
+                  <img src="assets/images/Tipo (azul).png" alt="Tipo" class="item-icon">
+                }
+              }
+            </div>
+            <div class="dropdown-item-content">
+              <div class="dropdown-item-title">{{ resultado.titulo }}</div>
+              @if (resultado.tipo === 'recurso' && resultado.autores) {
+                <div class="dropdown-item-authors">{{ resultado.autores }}</div>
+              }
+              <div class="dropdown-item-type">{{ resultado.tipo }}</div>
+            </div>
+          </div>
+        }
+      }
+    </div>
   }
 </div>
-<button class="btn-busqueda-avanzada" (click)="onBusquedaAvanzada()">
-  Búsqueda avanzada
-</button>

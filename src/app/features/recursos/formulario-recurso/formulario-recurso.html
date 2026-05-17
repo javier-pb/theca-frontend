@@ -1,6 +1,5 @@
 <div class="form-container">
   <div class="form-content">
-    <!-- Título: -->
     <h1 class="page-title">{{ esEdicion() ? 'EDITAR RECURSO' : 'AÑADIR RECURSO' }}</h1>
 
     <form (ngSubmit)="onSubmit()">
@@ -22,46 +21,48 @@
                 }
               </div>
 
-              <!-- Botón de editar: -->
               <button type="button" class="btn-edit-portada" (click)="abrirSelectorArchivo()">
                 <img src="assets/images/Editar.png" alt="Editar" class="icon-edit">
               </button>
             </div>
 
-            <input
-              type="file"
-              (change)="onFileSelected($event)"
-              accept="image/*"
-              id="portadaInput"
-              style="display: none">
+            <input type="file" (change)="onFileSelected($event)" accept="image/*" id="portadaInput" style="display: none">
           </div>
         </div>
 
         <div class="datos-column">
           <div class="form-group">
             <label>*Título:</label>
-            <input
-              type="text"
-              [ngModel]="titulo()"
-              (ngModelChange)="titulo.set($event)"
-              name="titulo"
-              placeholder="Título del recurso">
+            <input type="text" [ngModel]="titulo()" (ngModelChange)="titulo.set($event)" name="titulo" placeholder="Título del recurso">
             @if (errorTitulo()) {
               <p class="field-error">{{ errorTitulo() }}</p>
             }
           </div>
 
+          <!-- Autor: -->
           <div class="form-group">
             <label>Autor/es:</label>
             <div class="select-with-add">
-              <select [ngModel]="autoresIds()" (ngModelChange)="autoresIds.set($event)" name="autoresIds">
-                <option value="">Seleccione autor/es</option>
-                @for (autor of autoresDisponibles(); track autor.id) {
-                  <option [value]="autor.id">{{ autor.nombre }}</option>
+              <div class="custom-dropdown autores" (click)="$event.stopPropagation()">
+                <div class="dropdown-trigger" (click)="toggleAutoresDropdown()">
+                  <span class="dropdown-text">{{ autoresTexto() || 'Seleccione autores...' }}</span>
+                  <span class="dropdown-arrow">▼</span>
+                </div>
+                @if (autoresDropdownOpen()) {
+                  <div class="dropdown-menu" [class.dropdown-top]="autoresDropdownPosition() === 'top'">
+                    <div class="dropdown-options">
+                      @for (autor of autoresDisponibles(); track autor.id) {
+                        <label class="dropdown-option">
+                          <input type="checkbox" [checked]="autoresIds().includes(autor.id!)" (change)="toggleAutor(autor.id!)">
+                          <span>{{ autor.nombre }}</span>
+                        </label>
+                      }
+                    </div>
+                  </div>
                 }
-              </select>
-              <button type="button" class="btn-add" (click)="irATipos()">
-                <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add">
+              </div>
+              <button type="button" class="btn-add-small" (click)="abrirModalAutor()">
+                <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add-small">
               </button>
             </div>
           </div>
@@ -72,76 +73,87 @@
         <div class="form-group half">
           <label>*Tipo de recurso:</label>
           <div class="select-with-add">
-            <select [ngModel]="tipoId()" (ngModelChange)="tipoId.set($event)" name="tipoId">
+            <select [ngModel]="tipoId()" (ngModelChange)="onTipoChange($event)" name="tipoId">
               <option value="">Seleccione un tipo</option>
               @for (tipo of tiposDisponibles(); track tipo.id) {
                 <option [value]="tipo.id">{{ tipo.nombre }}</option>
               }
             </select>
-            <button type="button" class="btn-add" (click)="irATipos()">
-              <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add">
+            <button type="button" class="btn-add-small" (click)="abrirModalTipo()">
+              <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add-small">
             </button>
           </div>
         </div>
 
         <div class="form-group half">
           <label>Versión:</label>
-          <input
-            type="text"
-            [ngModel]="version()"
-            (ngModelChange)="version.set($event)"
-            name="version"
-            placeholder="1.0">
+          <input type="text" [ngModel]="version()" (ngModelChange)="version.set($event)" name="version" placeholder="1.0">
         </div>
       </div>
 
       <div class="form-group">
         <label>Descripción:</label>
-        <textarea
-          [ngModel]="descripcion()"
-          (ngModelChange)="descripcion.set($event)"
-          name="descripcion"
-          rows="4"
-          placeholder="Escriba una breve descripción del recurso..."></textarea>
+        <textarea [ngModel]="descripcion()" (ngModelChange)="descripcion.set($event)" name="descripcion" rows="4" placeholder="Escriba una breve descripción del recurso..."></textarea>
       </div>
 
       <div class="form-group">
         <label>Enlace:</label>
-        <input
-          type="url"
-          [ngModel]="enlace()"
-          (ngModelChange)="enlace.set($event)"
-          name="enlace"
-          placeholder="https://www....">
+        <input type="url" [ngModel]="enlace()" (ngModelChange)="enlace.set($event)" name="enlace" placeholder="https://www....">
       </div>
 
       <div class="form-row">
+        <!-- Categoría: -->
         <div class="form-group half">
-          <label>*Añadir categoría/s:</label>
+          <label>Categoría/s:</label>
           <div class="select-with-add">
-            <select [ngModel]="categoriasIds()" (ngModelChange)="categoriasIds.set($event)" name="categoriasIds">
-              <option value="">Seleccione categoría/s</option>
-              @for (categoria of categoriasDisponibles(); track categoria.id) {
-                <option [value]="categoria.id">{{ categoria.nombre }}</option>
+            <div class="custom-dropdown categorias" (click)="$event.stopPropagation()">
+              <div class="dropdown-trigger" (click)="toggleCategoriasDropdown()">
+                <span class="dropdown-text">{{ categoriasTexto() || 'Seleccione categorías...' }}</span>
+                <span class="dropdown-arrow">▼</span>
+              </div>
+              @if (categoriasDropdownOpen()) {
+                <div class="dropdown-menu" [class.dropdown-top]="categoriasDropdownPosition() === 'top'">
+                  <div class="dropdown-options">
+                    @for (item of categoriasJerarquicas(); track item.categoria.id) {
+                      <label class="dropdown-option" [style.marginLeft.px]="item.nivel * 20">
+                        <input type="checkbox" [checked]="categoriasIds().includes(item.categoria.id!)" (change)="toggleCategoria(item.categoria.id!)">
+                        <span>{{ item.displayNombre }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
               }
-            </select>
-            <button type="button" class="btn-add" (click)="irACategorias()">
-              <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add">
+            </div>
+            <button type="button" class="btn-add-small" (click)="abrirModalCategoria()">
+              <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add-small">
             </button>
           </div>
         </div>
 
+        <!-- Etiqueta: -->
         <div class="form-group half">
-          <label>Añadir etiqueta/s:</label>
+          <label>Etiqueta/s:</label>
           <div class="select-with-add">
-            <select [ngModel]="etiquetasIds()" (ngModelChange)="etiquetasIds.set($event)" name="etiquetasIds">
-              <option value="">Seleccione etiqueta/s</option>
-              @for (etiqueta of etiquetasDisponibles(); track etiqueta.id) {
-                <option [value]="etiqueta.id">{{ etiqueta.nombre }}</option>
+            <div class="custom-dropdown etiquetas" (click)="$event.stopPropagation()">
+              <div class="dropdown-trigger" (click)="toggleEtiquetasDropdown()">
+                <span class="dropdown-text">{{ etiquetasTexto() || 'Seleccione etiquetas...' }}</span>
+                <span class="dropdown-arrow">▼</span>
+              </div>
+              @if (etiquetasDropdownOpen()) {
+                <div class="dropdown-menu" [class.dropdown-top]="etiquetasDropdownPosition() === 'top'">
+                  <div class="dropdown-options">
+                    @for (etiqueta of etiquetasDisponibles(); track etiqueta.id) {
+                      <label class="dropdown-option">
+                        <input type="checkbox" [checked]="etiquetasIds().includes(etiqueta.id!)" (change)="toggleEtiqueta(etiqueta.id!)">
+                        <span>{{ etiqueta.nombre }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
               }
-            </select>
-            <button type="button" class="btn-add" (click)="irAEtiquetas()">
-              <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add">
+            </div>
+            <button type="button" class="btn-add-small" (click)="abrirModalEtiqueta()">
+              <img src="assets/images/Anadir.png" alt="Añadir" class="icon-add-small">
             </button>
           </div>
         </div>
@@ -155,7 +167,6 @@
         <div class="error-general">{{ errorGeneral() }}</div>
       }
 
-      <!-- Botón de acción: -->
       <div class="form-actions">
         <button type="submit" class="btn-crear-recurso" [disabled]="loading()">
           {{ esEdicion() ? 'Actualizar recurso' : 'Añadir recurso' }}
@@ -163,4 +174,37 @@
       </div>
     </form>
   </div>
+
+  <!-- Modales para crear entidades -->
+  @if (mostrarModalAutor()) {
+    <app-modal-crear-entidad
+      tipo="autor"
+      (cerrarModal)="cerrarModalAutor()"
+      (entidadCreada)="onAutorCreado($event)">
+    </app-modal-crear-entidad>
+  }
+
+  @if (mostrarModalCategoria()) {
+    <app-modal-crear-entidad
+      tipo="categoria"
+      (cerrarModal)="cerrarModalCategoria()"
+      (entidadCreada)="onCategoriaCreada($event)">
+    </app-modal-crear-entidad>
+  }
+
+  @if (mostrarModalTipo()) {
+    <app-modal-crear-entidad
+      tipo="tipo"
+      (cerrarModal)="cerrarModalTipo()"
+      (entidadCreada)="onTipoCreado($event)">
+    </app-modal-crear-entidad>
+  }
+
+  @if (mostrarModalEtiqueta()) {
+    <app-modal-crear-entidad
+      tipo="etiqueta"
+      (cerrarModal)="cerrarModalEtiqueta()"
+      (entidadCreada)="onEtiquetaCreada($event)">
+    </app-modal-crear-entidad>
+  }
 </div>

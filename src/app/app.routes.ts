@@ -19,6 +19,8 @@ import { FormularioAutorComponent } from './features/autores/formulario-autor/fo
 import { ListaTiposComponent } from './features/tipos/lista-tipos/lista-tipos';
 import { FormularioTipoComponent } from './features/tipos/formulario-tipo/formulario-tipo';
 import { DetalleTipoComponent } from './features/tipos/detalle-tipo/detalle-tipo';
+import { BusquedaAvanzadaComponent } from './features/busqueda-avanzada/busqueda-avanzada/busqueda-avanzada';
+import { ResultadosBusquedaComponent } from './features/busqueda-avanzada/resultados-busqueda/resultados-busqueda';
 
 // Rutas de la aplicación:
 export const routes: Routes = [
@@ -53,6 +55,9 @@ export const routes: Routes = [
       { path: 'tipos/nuevo', component: FormularioTipoComponent },
       { path: 'tipos/editar/:id', component: FormularioTipoComponent },
       { path: 'tipos/detalle/:id', component: DetalleTipoComponent },
+
+      { path: 'busqueda-avanzada', component: BusquedaAvanzadaComponent },
+      { path: 'busqueda/resultados', component: ResultadosBusquedaComponent },
 
       { path: '', redirectTo: '/recursos', pathMatch: 'full' }
     ]

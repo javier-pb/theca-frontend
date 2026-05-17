@@ -1,0 +1,58 @@
+<div class="resultados-container">
+  <!-- Cabecera con botón y título: -->
+  <div class="resultados-header">
+    <button class="btn-volver" (click)="volverABuscar()">
+      ← Volver a buscar
+    </button>
+    <h1 class="page-title">RESULTADOS DE LA BÚSQUEDA</h1>
+    <div class="header-spacer"></div>
+  </div>
+
+  <!-- Contenido: -->
+  @if (loading()) {
+    <div class="loading">Buscando recursos...</div>
+  }
+
+  @if (error()) {
+    <div class="error">{{ error() }}</div>
+  }
+
+  @if (!loading() && !error()) {
+    @if (recursos().length === 0) {
+      <div class="empty">
+        No se encontraron recursos
+        <button class="btn-link" (click)="volverABuscar()">Volver a buscar</button>
+      </div>
+    }
+
+    @if (recursos().length > 0) {
+      <div class="resultados-info">
+        @if (recursos().length === 1) {
+          Se encontró 1 recurso
+        } @else {
+          Se encontraron {{ recursos().length }} recursos
+        }
+      </div>
+
+      <div class="recursos-grid">
+        @for (recurso of recursos(); track recurso.id) {
+          <div class="recurso-card" (click)="verDetalle(recurso.id)">
+            <div class="card-imagen">
+              @if (recurso.imagenPortada) {
+                <img [src]="getPortadaUrl(recurso.imagenPortada)" alt="Portada" class="portada-img">
+              } @else {
+                <img src="assets/images/Recurso (azul).png" alt="Recurso" class="portada-img">
+              }
+            </div>
+            <div class="card-titulo">{{ recurso.titulo }}</div>
+            <div class="card-autores">
+              @for (autor of recurso.autoresList; track $index) {
+                <div class="card-autor">{{ autor }}</div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

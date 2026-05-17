@@ -1,0 +1,26 @@
+<div class="modal-overlay" (click)="cerrar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h3>Crear {{ titulo() }}</h3>
+
+    <div class="form-group">
+      <label>Nombre:</label>
+      <input
+        type="text"
+        [(ngModel)]="nombre"
+        (keyup.enter)="guardar()"
+        placeholder="{{ titulo().substring(0, 1).toUpperCase() + titulo().substring(1) }}"
+        autofocus>
+    </div>
+
+    @if (error()) {
+      <div class="error-mensaje">{{ error() }}</div>
+    }
+
+    <div class="modal-buttons">
+      <button class="btn-cancelar" (click)="cerrar()">Cancelar</button>
+      <button class="btn-crear" (click)="guardar()" [disabled]="!nombre().trim() || loading()">
+        {{ loading() ? 'Creando...' : 'Crear' }}
+      </button>
+    </div>
+  </div>
+</div>

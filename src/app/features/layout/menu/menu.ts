@@ -18,9 +18,22 @@ export class MenuComponent {
     private router: Router
   ) {}
 
-  // Método para verificar si una ruta está activa:
+  // Método para verificar si una ruta pertenece a la sección actual:
   isActive(route: string): boolean {
-    return this.router.url === route;
+    const currentUrl = this.router.url;
+
+    const secciones: { [key: string]: string } = {
+      '/recursos': '/recursos',
+      '/categorias': '/categorias',
+      '/etiquetas': '/etiquetas',
+      '/autores': '/autores',
+      '/tipos': '/tipos'
+    };
+
+    const seccionBase = secciones[route];
+    if (!seccionBase) return false;
+
+    return currentUrl.startsWith(seccionBase);
   }
 
 }

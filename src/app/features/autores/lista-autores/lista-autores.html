@@ -23,7 +23,7 @@
   }
 
   @if (!loading() && !error()) {
-    @if (autoresFiltrados().length === 0 && terminoBusqueda() === '') {
+    @if (autoresFiltrados().length === 0 && terminoBusqueda() === '' && !mostrarAnonimo()) {
       <div class="empty">No hay autores. ¡Cree su primer autor!</div>
     }
 
@@ -31,7 +31,7 @@
       <div class="empty">No se encontraron autores que coincidan con "{{ terminoBusqueda() }}"</div>
     }
 
-    @if (autoresFiltrados().length > 0) {
+    @if (autoresFiltrados().length > 0 || mostrarAnonimo()) {
       @for (grupo of grupos(); track grupo.letra) {
         <div class="grupo-letra">
           <h2 class="letra-titulo">{{ grupo.letra }}</h2>
@@ -41,6 +41,17 @@
                 <span class="autor-nombre">{{ autor.nombre }}</span>
               </div>
             }
+          </div>
+        </div>
+      }
+
+      <!-- Anónimo:-->
+      @if (mostrarAnonimo()) {
+        <div class="grupo-letra">
+          <div class="autores-grid">
+            <div class="autor-card anonimo-card" (click)="irAAnonimo()">
+              <span class="autor-nombre">Anónimo</span>
+            </div>
           </div>
         </div>
       }

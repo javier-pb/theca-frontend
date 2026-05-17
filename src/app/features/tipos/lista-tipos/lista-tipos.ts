@@ -68,7 +68,7 @@ export class ListaTiposComponent implements OnInit {
   }
 
   abrirBusquedaAvanzada(): void {
-    console.log('Búsqueda avanzada - Pendiente de implementar');
+    this.router.navigate(['/busqueda-avanzada/tipos']);
   }
 
   irADetalle(id: string): void {

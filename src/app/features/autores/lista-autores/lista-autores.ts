@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AutorService, Autor } from '../../../core/services/autor';
+import { RecursoService } from '../../../core/services/recurso';
 import { BusquedaComponent } from '../../../shared/busqueda/busqueda';
 
 interface GrupoAutores {
@@ -19,6 +20,7 @@ interface GrupoAutores {
 // Componente para la lista de autores:
 export class ListaAutoresComponent implements OnInit {
   private autorService = inject(AutorService);
+  private recursoService = inject(RecursoService);
   private router = inject(Router);
 
   autores = signal<Autor[]>([]);
@@ -28,8 +30,11 @@ export class ListaAutoresComponent implements OnInit {
   error = signal('');
   grupos = signal<GrupoAutores[]>([]);
 
+  mostrarAnonimo = signal(false);
+
   ngOnInit(): void {
     this.cargarAutores();
+    this.verificarRecursosSinAutor();
   }
 
   cargarAutores(): void {
@@ -46,6 +51,20 @@ export class ListaAutoresComponent implements OnInit {
       error: () => {
         this.error.set('Error al cargar los autores');
         this.loading.set(false);
+      }
+    });
+  }
+
+  verificarRecursosSinAutor(): void {
+    this.recursoService.getAll().subscribe({
+      next: (recursos) => {
+        const hayRecursosSinAutor = recursos.some(recurso =>
+          !recurso.autores || recurso.autores.length === 0
+        );
+        this.mostrarAnonimo.set(hayRecursosSinAutor);
+      },
+      error: () => {
+        console.error('Error al verificar recursos sin autor');
       }
     });
   }
@@ -105,12 +124,16 @@ export class ListaAutoresComponent implements OnInit {
     this.grupos.set(gruposArray);
   }
 
-  abrirBusquedaAvanzada(): void {
-    console.log('Búsqueda avanzada - Pendiente de implementar');
-  }
-
   irADetalle(id: string): void {
     this.router.navigate(['/autores/detalle', id]);
+  }
+
+  irAAnonimo(): void {
+    this.router.navigate(['/autores/detalle/anonimo']);
+  }
+
+  abrirBusquedaAvanzada(): void {
+    this.router.navigate(['/busqueda-avanzada/autores']);
   }
 
 }

@@ -11,19 +11,20 @@ import { Component } from '@angular/core';
 @Component({ template: '' })
 class DummyComponent {}
 
-// Teest unirario para la lista de categorías:
+// Test unitario para la lista de categorías:
 describe('ListaCategoriasComponent', () => {
+
   let component: ListaCategoriasComponent;
   let fixture: ComponentFixture<ListaCategoriasComponent>;
   let categoriaService: jasmine.SpyObj<CategoriaService>;
   let router: Router;
 
   const mockCategorias: Categoria[] = [
-    { id: '1', nombre: 'Categoría A', categoriaPadreId: undefined },
-    { id: '2', nombre: 'Categoría B', categoriaPadreId: undefined },
-    { id: '3', nombre: 'Subcategoría A1', categoriaPadreId: '1' },
-    { id: '4', nombre: 'Subcategoría A2', categoriaPadreId: '1' },
-    { id: '5', nombre: 'Subcategoría B1', categoriaPadreId: '2' }
+    { id: '1', nombre: 'Literatura', categoriaPadreId: undefined },
+    { id: '2', nombre: 'Historia', categoriaPadreId: undefined },
+    { id: '3', nombre: 'Novela', categoriaPadreId: '1' },
+    { id: '4', nombre: 'Poesía', categoriaPadreId: '1' },
+    { id: '5', nombre: 'Contemporánea', categoriaPadreId: '2' }
   ];
 
   beforeEach(() => {
@@ -31,7 +32,13 @@ describe('ListaCategoriasComponent', () => {
     categoriaService.getAll.and.returnValue(of(mockCategorias));
 
     TestBed.configureTestingModule({
-      imports: [ListaCategoriasComponent, RouterTestingModule],
+      imports: [
+        ListaCategoriasComponent,
+        RouterTestingModule.withRoutes([
+          { path: 'categorias/detalle/1', component: DummyComponent },
+          { path: 'busqueda-avanzada/categorias', component: DummyComponent }
+        ])
+      ],
       providers: [{ provide: CategoriaService, useValue: categoriaService }]
     }).compileComponents();
 
@@ -91,25 +98,25 @@ describe('ListaCategoriasComponent', () => {
   });
 
   describe('ordenarCategorias', () => {
-    it('should sort categorias hierarchically', () => {
+    it('should sort categorias alphabetically', () => {
       const desordenadas: Categoria[] = [
-        { id: '2', nombre: 'Zeta', categoriaPadreId: undefined },
+        { id: '3', nombre: 'Zeta', categoriaPadreId: undefined },
         { id: '1', nombre: 'Alfa', categoriaPadreId: undefined },
-        { id: '3', nombre: 'Beta Hijo', categoriaPadreId: '1' }
+        { id: '2', nombre: 'Beta', categoriaPadreId: undefined }
       ];
 
       const ordenadas = component.ordenarCategorias(desordenadas);
-      expect(ordenadas[0].id).toBe('1');
-      expect(ordenadas[1].id).toBe('3');
-      expect(ordenadas[2].id).toBe('2');
+      expect(ordenadas[0].nombre).toBe('Alfa');
+      expect(ordenadas[1].nombre).toBe('Beta');
+      expect(ordenadas[2].nombre).toBe('Zeta');
     });
   });
 
   describe('onBuscar', () => {
     it('should update terminoBusqueda and call filtrarCategorias', () => {
       spyOn(component, 'filtrarCategorias');
-      component.onBuscar('prueba');
-      expect(component.terminoBusqueda()).toBe('prueba');
+      component.onBuscar('Literatura');
+      expect(component.terminoBusqueda()).toBe('Literatura');
       expect(component.filtrarCategorias).toHaveBeenCalled();
     });
   });
@@ -125,30 +132,32 @@ describe('ListaCategoriasComponent', () => {
       expect(component.categoriasFiltradas().length).toBe(5);
     });
 
-  describe('filtrarCategorias', () => {
-    beforeEach(() => {
-      const datos = JSON.parse(JSON.stringify(mockCategorias));
-      component.categorias.set(datos);
-    });
-
-    it('should filter categorias by partial name', () => {
-      component.terminoBusqueda.set('Subcategoría');
-      component.filtrarCategorias();
-      expect(component.categoriasFiltradas().length).toBe(3);
-    });
-  });
-
-    it('should filter categorias by partial name', () => {
-      component.terminoBusqueda.set('Subcategoría');
-      component.filtrarCategorias();
-      expect(component.categoriasFiltradas().length).toBe(3);
-    });
-
-    it('should filter categorias by partial text within subcategoria', () => {
-      component.terminoBusqueda.set('A1');
+    it('should filter categorias by exact name', () => {
+      component.terminoBusqueda.set('Literatura');
       component.filtrarCategorias();
       expect(component.categoriasFiltradas().length).toBe(1);
-      expect(component.categoriasFiltradas()[0]?.nombre).toBe('Subcategoría A1');
+      expect(component.categoriasFiltradas()[0].nombre).toBe('Literatura');
+    });
+
+    it('should filter categorias by partial name', () => {
+      component.terminoBusqueda.set('tura');
+      component.filtrarCategorias();
+      expect(component.categoriasFiltradas().length).toBe(1);
+      expect(component.categoriasFiltradas()[0].nombre).toBe('Literatura');
+    });
+
+    it('should filter subcategorias by name', () => {
+      component.terminoBusqueda.set('Novela');
+      component.filtrarCategorias();
+      expect(component.categoriasFiltradas().length).toBe(1);
+      expect(component.categoriasFiltradas()[0].nombre).toBe('Novela');
+    });
+
+    it('should be case insensitive', () => {
+      component.terminoBusqueda.set('literatura');
+      component.filtrarCategorias();
+      expect(component.categoriasFiltradas().length).toBe(1);
+      expect(component.categoriasFiltradas()[0].nombre).toBe('Literatura');
     });
 
     it('should return empty array when no matches', () => {
@@ -167,10 +176,10 @@ describe('ListaCategoriasComponent', () => {
   });
 
   describe('abrirBusquedaAvanzada', () => {
-    it('should log message', () => {
-      const consoleSpy = spyOn(console, 'log');
+    it('should navigate to busqueda-avanzada/categorias', () => {
+      spyOn(router, 'navigate');
       component.abrirBusquedaAvanzada();
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(router.navigate).toHaveBeenCalledWith(['/busqueda-avanzada/categorias']);
     });
   });
 
@@ -182,15 +191,49 @@ describe('ListaCategoriasComponent', () => {
     }));
 
     it('should render title', () => {
-      expect(fixture.debugElement.nativeElement.querySelector('.page-title')).toBeTruthy();
+      const title = fixture.debugElement.nativeElement.querySelector('.page-title');
+      expect(title).toBeTruthy();
+      expect(title.textContent).toContain('CATEGORÍAS');
     });
 
     it('should render add button', () => {
-      expect(fixture.debugElement.nativeElement.querySelector('.btn-anadir')).toBeTruthy();
+      const addButton = fixture.debugElement.nativeElement.querySelector('.btn-anadir');
+      expect(addButton).toBeTruthy();
     });
 
     it('should render busqueda component', () => {
-      expect(fixture.debugElement.query(By.css('app-busqueda'))).toBeTruthy();
+      const busquedaComponent = fixture.debugElement.query(By.css('app-busqueda'));
+      expect(busquedaComponent).toBeTruthy();
+    });
+
+    it('should show loading state when loading', () => {
+      component.loading.set(true);
+      fixture.detectChanges();
+
+      const loading = fixture.debugElement.nativeElement.querySelector('.loading');
+      expect(loading).toBeTruthy();
+    });
+
+    it('should show error state when error', () => {
+      component.loading.set(false);
+      component.error.set('Error de prueba');
+      fixture.detectChanges();
+
+      const error = fixture.debugElement.nativeElement.querySelector('.error');
+      expect(error).toBeTruthy();
+      expect(error.textContent).toContain('Error de prueba');
+    });
+
+    it('should show empty state when no categorias', () => {
+      component.categorias.set([]);
+      component.categoriasFiltradas.set([]);
+      component.loading.set(false);
+      component.error.set('');
+      fixture.detectChanges();
+
+      const empty = fixture.debugElement.nativeElement.querySelector('.empty');
+      expect(empty).toBeTruthy();
+      expect(empty.textContent).toContain('No hay categorías');
     });
   });
 

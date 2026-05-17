@@ -9,21 +9,34 @@ class DummyComponent {}
 
 // Test unitario para el menú:
 describe('MenuComponent', () => {
+
   let component: MenuComponent;
   let fixture: ComponentFixture<MenuComponent>;
   let router: Router;
+
+  const routes = [
+    { path: 'recursos', component: DummyComponent },
+    { path: 'recursos/nuevo', component: DummyComponent },
+    { path: 'recursos/detalle/1', component: DummyComponent },
+    { path: 'recursos/editar/1', component: DummyComponent },
+    { path: 'categorias', component: DummyComponent },
+    { path: 'categorias/nuevo', component: DummyComponent },
+    { path: 'categorias/detalle/1', component: DummyComponent },
+    { path: 'etiquetas', component: DummyComponent },
+    { path: 'etiquetas/detalle/1', component: DummyComponent },
+    { path: 'autores', component: DummyComponent },
+    { path: 'autores/nuevo', component: DummyComponent },
+    { path: 'autores/detalle/1', component: DummyComponent },
+    { path: 'tipos', component: DummyComponent },
+    { path: 'tipos/nuevo', component: DummyComponent },
+    { path: 'tipos/detalle/1', component: DummyComponent }
+  ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
         MenuComponent,
-        RouterTestingModule.withRoutes([
-          { path: 'recursos', component: DummyComponent },
-          { path: 'categorias', component: DummyComponent },
-          { path: 'etiquetas', component: DummyComponent },
-          { path: 'autores', component: DummyComponent },
-          { path: 'tipos', component: DummyComponent }
-        ])
+        RouterTestingModule.withRoutes(routes)
       ]
     }).compileComponents();
 
@@ -66,8 +79,8 @@ describe('MenuComponent', () => {
     });
   });
 
-  describe('isActive method', () => {
-    it('should return true when current URL matches the route', fakeAsync(() => {
+  describe('isActive method - rutas exactas', () => {
+    it('should return true when current URL matches the route exactly', fakeAsync(() => {
       router.navigate(['/recursos']);
       tick();
       fixture.detectChanges();
@@ -81,6 +94,106 @@ describe('MenuComponent', () => {
       fixture.detectChanges();
 
       expect(component.isActive('/categorias')).toBe(false);
+    }));
+  });
+
+  describe('isActive method - rutas hijas', () => {
+    it('should return true for /recursos/nuevo when route is /recursos', fakeAsync(() => {
+      router.navigate(['/recursos/nuevo']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/recursos')).toBe(true);
+    }));
+
+    it('should return true for /recursos/detalle/1 when route is /recursos', fakeAsync(() => {
+      router.navigate(['/recursos/detalle/1']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/recursos')).toBe(true);
+    }));
+
+    it('should return true for /recursos/editar/1 when route is /recursos', fakeAsync(() => {
+      router.navigate(['/recursos/editar/1']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/recursos')).toBe(true);
+    }));
+
+    it('should return true for /categorias/nuevo when route is /categorias', fakeAsync(() => {
+      router.navigate(['/categorias/nuevo']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/categorias')).toBe(true);
+    }));
+
+    it('should return true for /categorias/detalle/1 when route is /categorias', fakeAsync(() => {
+      router.navigate(['/categorias/detalle/1']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/categorias')).toBe(true);
+    }));
+
+    it('should return true for /etiquetas/detalle/1 when route is /etiquetas', fakeAsync(() => {
+      router.navigate(['/etiquetas/detalle/1']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/etiquetas')).toBe(true);
+    }));
+
+    it('should return true for /autores/nuevo when route is /autores', fakeAsync(() => {
+      router.navigate(['/autores/nuevo']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/autores')).toBe(true);
+    }));
+
+    it('should return true for /autores/detalle/1 when route is /autores', fakeAsync(() => {
+      router.navigate(['/autores/detalle/1']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/autores')).toBe(true);
+    }));
+
+    it('should return true for /tipos/nuevo when route is /tipos', fakeAsync(() => {
+      router.navigate(['/tipos/nuevo']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/tipos')).toBe(true);
+    }));
+
+    it('should return true for /tipos/detalle/1 when route is /tipos', fakeAsync(() => {
+      router.navigate(['/tipos/detalle/1']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/tipos')).toBe(true);
+    }));
+  });
+
+  describe('isActive method - secciones no relacionadas', () => {
+    it('should return false for /recursos/nuevo when route is /categorias', fakeAsync(() => {
+      router.navigate(['/recursos/nuevo']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/categorias')).toBe(false);
+    }));
+
+    it('should return false for /autores/detalle/1 when route is /tipos', fakeAsync(() => {
+      router.navigate(['/autores/detalle/1']);
+      tick();
+      fixture.detectChanges();
+
+      expect(component.isActive('/tipos')).toBe(false);
     }));
   });
 

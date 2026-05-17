@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { EtiquetaService, Etiqueta } from '../../../core/services/etiqueta';
+import { RecursoService } from '../../../core/services/recurso';
 import { ModalEtiquetaComponent } from '../modal-etiqueta/modal-etiqueta';
 
 @Component({
@@ -12,9 +13,10 @@ import { ModalEtiquetaComponent } from '../modal-etiqueta/modal-etiqueta';
   templateUrl: './detalle-etiqueta.html',
   styleUrls: ['./detalle-etiqueta.css']
 })
-// Componente pa el detalle de una etiqueta:
+// Componente para el detalle de una etiqueta:
 export class DetalleEtiquetaComponent implements OnInit, OnDestroy {
   private etiquetaService = inject(EtiquetaService);
+  private recursoService = inject(RecursoService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -51,7 +53,7 @@ export class DetalleEtiquetaComponent implements OnInit, OnDestroy {
     this.etiquetaService.getById(id).subscribe({
       next: (data) => {
         this.etiqueta.set(data);
-        this.cargarRecursos(id);
+        this.cargarRecursosAsociados(id);
         this.loading.set(false);
       },
       error: () => {
@@ -61,10 +63,14 @@ export class DetalleEtiquetaComponent implements OnInit, OnDestroy {
     });
   }
 
-  cargarRecursos(id: string): void {
-    this.etiquetaService.getRecursosAsociados(id).subscribe({
-      next: (data) => {
-        this.recursos.set(data);
+  cargarRecursosAsociados(etiquetaId: string): void {
+    this.recursoService.getAll().subscribe({
+      next: (recursos) => {
+        const filtrados = recursos.filter(recurso =>
+          recurso.etiquetas && Array.isArray(recurso.etiquetas) &&
+          recurso.etiquetas.some((e: any) => (e.id || e._id) === etiquetaId)
+        );
+        this.recursos.set(filtrados);
       },
       error: () => {
         console.error('Error al cargar recursos asociados');
@@ -113,6 +119,10 @@ export class DetalleEtiquetaComponent implements OnInit, OnDestroy {
         this.mostrarModal.set(false);
       }
     });
+  }
+
+  irADetalleRecurso(id: string): void {
+    this.router.navigate(['/recursos/detalle', id]);
   }
 
 }

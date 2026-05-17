@@ -48,8 +48,6 @@ export class ListaCategoriasComponent implements OnInit {
   }
 
   ordenarCategorias(categorias: Categoria[]): Categoria[] {
-    // Para la vista en árbol, el orden no debería afectar el filtrado
-    // Simplemente ordenamos alfabéticamente
     return [...categorias].sort((a, b) => a.nombre.localeCompare(b.nombre));
   }
 
@@ -73,7 +71,7 @@ export class ListaCategoriasComponent implements OnInit {
   }
 
   abrirBusquedaAvanzada(): void {
-    console.log('Búsqueda avanzada - Pendiente de implementar');
+    this.router.navigate(['/busqueda-avanzada/categorias']);
   }
 
   abrirDetalle(id: string): void {

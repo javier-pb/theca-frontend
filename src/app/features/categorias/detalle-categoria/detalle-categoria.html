@@ -39,7 +39,7 @@
         <!-- Número de recursos asociados: -->
         <div class="info-group">
           <span class="info-label">N.º de recursos asociados:</span>
-          <span class="info-value">0</span>
+          <span class="info-value">{{ recursosAsociados().length }}</span>
         </div>
 
         <!-- Recursos asociados: -->
@@ -51,7 +51,7 @@
             } @else {
               <ul class="recursos-lista">
                 @for (recurso of recursosAsociados(); track recurso.id) {
-                  <li class="recurso-item" [routerLink]="['/recursos/detalle', recurso.id]">
+                  <li class="recurso-item" (click)="irADetalleRecurso(recurso.id)">
                     {{ recurso.titulo }}
                   </li>
                 }

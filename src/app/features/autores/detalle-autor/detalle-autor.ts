@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AutorService, Autor } from '../../../core/services/autor';
+import { RecursoService } from '../../../core/services/recurso';
 
 @Component({
   selector: 'app-detalle-autor',
@@ -15,6 +16,7 @@ import { AutorService, Autor } from '../../../core/services/autor';
 export class DetalleAutorComponent implements OnInit, OnDestroy {
 
   private autorService = inject(AutorService);
+  private recursoService = inject(RecursoService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -23,13 +25,16 @@ export class DetalleAutorComponent implements OnInit, OnDestroy {
   loading = signal(true);
   error = signal('');
   mostrarModal = signal(false);
+  esAnonimo = signal(false);
 
   private routeSubscription?: Subscription;
 
   ngOnInit(): void {
     this.routeSubscription = this.route.params.subscribe(params => {
       const id = params['id'];
-      if (id) {
+      if (id === 'anonimo') {
+        this.cargarAnonimo();
+      } else if (id) {
         this.cargarAutor(id);
       } else {
         this.error.set('ID de autor no encontrado');
@@ -42,9 +47,32 @@ export class DetalleAutorComponent implements OnInit, OnDestroy {
     this.routeSubscription?.unsubscribe();
   }
 
+  cargarAnonimo(): void {
+    this.esAnonimo.set(true);
+    this.autor.set({ id: 'anonimo', nombre: 'Anónimo' } as Autor);
+    this.cargarRecursosSinAutor();
+    this.loading.set(false);
+  }
+
+  cargarRecursosSinAutor(): void {
+    this.recursoService.getAll().subscribe({
+      next: (recursos) => {
+        const filtrados = recursos.filter(recurso =>
+          !recurso.autores || recurso.autores.length === 0
+        );
+        this.recursos.set(filtrados);
+      },
+      error: () => {
+        console.error('Error al cargar recursos sin autor');
+        this.recursos.set([]);
+      }
+    });
+  }
+
   cargarAutor(id: string): void {
     this.loading.set(true);
     this.error.set('');
+    this.esAnonimo.set(false);
 
     this.autorService.getById(id).subscribe({
       next: (data) => {
@@ -71,6 +99,10 @@ export class DetalleAutorComponent implements OnInit, OnDestroy {
     });
   }
 
+  irADetalleRecurso(id: string): void {
+    this.router.navigate(['/recursos/detalle', id]);
+  }
+
   confirmarEliminar(): void {
     this.mostrarModal.set(true);
   }
@@ -81,7 +113,7 @@ export class DetalleAutorComponent implements OnInit, OnDestroy {
 
   eliminar(): void {
     const id = this.autor()?.id;
-    if (!id) return;
+    if (!id || id === 'anonimo') return;
 
     this.loading.set(true);
     this.autorService.delete(id).subscribe({
