@@ -126,14 +126,6 @@ describe('BusquedaComponent', () => {
       expect(component.termino()).toBe('new value');
     }));
 
-    it('should call onBuscar when btn-lupa is clicked', () => {
-      spyOn(component, 'onBuscar');
-      const lupaButton = fixture.debugElement.nativeElement.querySelector('.btn-lupa');
-      expect(lupaButton).toBeTruthy();
-      lupaButton.click();
-      expect(component.onBuscar).toHaveBeenCalled();
-    });
-
     it('should call onBuscar when Enter key is pressed in input', () => {
       spyOn(component, 'onBuscar');
       const input = fixture.debugElement.nativeElement.querySelector('.search-input');

@@ -20,6 +20,11 @@
   max-width: 900px;
 }
 
+.top-bar app-busqueda {
+  flex: 1;
+  min-width: 0;
+}
+
 /* Botón de añadir: */
 .btn-anadir {
   background: none;
@@ -170,18 +175,13 @@
     gap: 0.5rem;
   }
 
-  .search-container {
+  .top-bar app-busqueda {
     flex: 1 1 100%;
     order: 2;
   }
 
   .btn-anadir {
     order: 1;
-  }
-
-  .btn-busqueda-avanzada {
-    order: 3;
-    width: 100%;
   }
 
   .page-title {
